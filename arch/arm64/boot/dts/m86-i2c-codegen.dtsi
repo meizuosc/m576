@@ -1,0 +1,404 @@
+#define st_sensorhub_i2c	hsi2c_0
+#define wm8998_es705_i2c	hsi2c_1
+#define ti_motor_i2c		hsi2c_2
+#define st_touchscreen_i2c	hsi2c_4
+#define s2mps15_pmic_i2c	hsi2c_5
+#define ti_charger2_i2c	hsi2c_6
+#define ess9018_i2c		hsi2c_7
+#define ti_muic_i2c 		hsi2c_8
+#define nxp_nfc_i2c		hsi2c_9
+#define ps_als_i2c		hsi2c_10
+#define ti_charger1_i2c 	hsi2c_11
+
+#define led_lp5562_i2c		gpioi2c_0
+#define flash_lm3644_i2c	gpioi2c_1
+#define rear_module_i2c	gpioi2c_2
+#define vl6180_i2c		gpioi2c_3
+
+&s2mps15_pmic_i2c {
+	status = "okay";
+	samsung,hs-mode;
+	clock-frequency = <1000000>;
+	samsung,use-apm;
+
+	s2mps15_pmic: s2mps15@66 {
+		compatible = "samsung,s2mps15-pmic";
+		reg = <0x66>;
+		interrupts = <0 0 0>;
+		interrupt-parent = <&gpa3>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_irq &pm_wrsti &g3d_dvs>;
+		gpios = <&gpg1 0 0>, <&gpb0 4 0x2>, <&gpg1 1 0x1>;
+		smpl_warn_en = <1>; /* 1 : enable , 0 : disable*/
+		/* range of smpl_warn_vth */
+		/* PMIC1 */
+		/* 2100 : 2.3V, 2300 : 2.3V, 2500 : 2.5V, 2700 : 2.7V 2900 : 2.9V */
+		/* 3100 : 3.0V, 3300 : 3.0V, 3500 : 3.0V */
+		/* PMIC2 */
+		/* 2100 : 2.1V, 2300 : 2.3V, 2500 : 2.5V, 2700 : 2.7V 2900 : 2.9V */
+		/* 3100 : 3.1V, 3300 : 3.3V, 3500 : 3.5V */
+		smpl_warn_vth = <2900>;
+		smpl_warn_hys = <0x00>; /* LOwBat_Hys[4:3] 00(100mV)~11(400mV) */
+		adc-on;
+		buck_dvs_on;
+		g3d_en = <1>; /* 1 : enable , 0 : disable */
+		dvs_en = <1>; /* 1 : enable , 0 : disable */
+		buck6en_pin = "gpb0-4";
+		buck6en_addr = "13470000.pinctrl";
+		/* RTC: wtsr/smpl */
+		wtsr_en = <1>; /* enable */
+		smpl_en = <1>; /* enable */
+		wtsr_timer_val = <3>;	/* 1000ms */
+		smpl_timer_val = <4>;	/* 500ms */
+		check_jigon = <0>; /* do not check jigon */
+		/* RTC: If it's first boot, reset rtc to 1/1/2014 12:00:00(Wed) */
+		init_time,sec = <0>;
+		init_time,min = <0>;
+		init_time,hour = <12>;
+		init_time,mday = <1>;
+		init_time,mon = <0>;
+		init_time,year = <114>;
+		init_time,wday = <3>;
+	};
+};
+
+&st_sensorhub_i2c {
+	status = "okay";
+	sensor_hub@3a {
+		compatible = "st,sensor_hub";
+		reg = <0x3a>;
+
+		mx-hub,pwr28-reg-name = "vdd28_sen";
+		/*mx-hub,pwr18-reg-name = "vdd18-mcu";*/
+		pinctrl-names = "sensorhub_irq";
+		pinctrl-0 = <&hub_irq>;
+		mx-hub,irq-gpio = <&gpa1 7 0x0F>;
+		mx-hub,irq-flags = <0x2>;
+		mx-hub,wkup-gpio = <&gpf3 3 0>;
+		mx-hub,reset-gpio = <&gpr0 0 0>;
+		mx-hub,sleep-gpio = <&gpf0 2 0>;
+		mx-hub,busy-gpio = <&gpf4 5 0>;
+		mx-hub,boot-gpio = <&gpr0 2 0>;
+	};
+};
+
+&ess9018_i2c {
+	status = "okay";
+	clock-frequency = <400000>;
+
+	audio_pa_tfa9890: tfa9890_i2c@34 {
+		compatible ="nxp,tfa9890";
+		reg = <0x34>;
+	};
+
+	audio_codec_ess9018k2m: audio-codec-ess9018k2m@48 {
+		compatible = "ess,ess9018k2m";
+		reg = <0x48>;
+		gpios = <&gpf2 1 0 /* 48khz_osc */
+			&gpf2 3 0 /* 44100hz_osc */
+			&gpf0 4 0 /* resetb */
+			&gpf1 3 0 /* mute */
+			&gpf5 0 0 /* op_en */
+			&gpf1 0 0 /* low gain */
+			&gpf1 4 0 /* out select */
+			&gpf4 1 0 /* dvdd18 on */>;
+			pinctrl-names = "default";
+	};
+};
+
+&st_touchscreen_i2c {
+	status = "okay";
+	touchscreen@49 {
+		compatible = "st,fts";
+		reg = <0x49>;
+		/*pinctrl-names = "on_state", "off_state";*/
+		pinctrl-names = "touch_irq";
+		pinctrl-0 = <&touchpanel_irq>;
+		/*pinctrl-1 = <&touchpanel_input>;*/
+		touch,irq-gpio = <&gpa1 1 0x0F>;
+		irq_type = <8200>;
+		touch,reset-gpio = <&gpc3 2 0>;
+		touch,regulator_vddio = "vdd18_touch";
+		touch,regulator_vdd = "vdd33_touch";
+		tsp_18v-supply = <&touchscreen_supply18>;
+		tsp_28v-supply = <&touchscreen_supply33>;
+	};
+};
+
+/*motor begin*/
+&ti_motor_i2c{
+	status = "okay";
+		drv2605_motor@5a {
+		compatible = "ti,drv2605-haptic";
+		reg = <0x5a>;
+		gpios = <&gpf1 1 1>;/*motor enable pin*/
+		motor_calib_version=<3>;
+	};
+};
+/*motor end*/
+
+/*muic begin*/
+&ti_muic_i2c{
+	status = "okay";
+	clock-frequency = <400000>;
+
+	fusb302_typec@22{
+		compatible = "fusb302";
+		reg = <0x22>;
+		int-ccd = <&gpa1 5 0xf>;
+		pd-on = <&gpr3 4 0x01>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ccd_int  &pd_on>;
+	};
+
+	tsu6721_muic@25{
+		compatible = "ti,tsu6721-muic";
+		reg = <0x25>;
+		int-muic = <&gpa0 1 0xf>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&muic_int>;
+	};
+};
+/*muic end*/
+
+&ti_charger2_i2c{
+	status = "okay";
+	/*fuel gauge begin*/
+	bq27532_gauge@55{
+		compatible = "bq2753x";
+		reg = <0x55>;
+		int-gauge = <&gpa0 5 0xf>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&gauge_int>;
+	};
+	/*fuelgauge end*/
+	/*charger2 begin*/
+	bq25892_charger1@6b{
+		compatible = "ti,bq2589x-2";
+		reg = <0x6b>;
+		chg2-int = <&gpa0 2 0xf>;
+		chg2-en = <&gpr3 2 1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&chg2_int  &chg2_en>;
+	};
+	/*charger2 end*/
+};
+
+&ti_charger1_i2c{
+	status = "okay";
+	/*charger1 begin*/
+	bq25892_charger1@6b{
+		compatible = "ti,bq2589x-1";
+		reg = <0x6b>;
+		chg1-int = <&gpa0 3 0xf>;
+		chg1-en = <&gpr3 0 1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&chg1_int &chg1_en>;
+	};
+	/*charger1 end*/
+};
+
+&ps_als_i2c {
+	status = "okay";
+
+	txc_proximity@1e {
+		compatible = "txc,pa122", "txc,pa224";
+		reg = <0x1e>;
+		txc,irq-gpio = <&gpa3 4 0x0F>;
+		pinctrl-names = "txc_ps";
+		pinctrl-0 = <&ps_irq>;
+		txc,power_reg = "vdd28_sen";
+	};
+
+	intersil_light@44 {
+		compatible = "intersil,isl29125";
+		reg = <0x44>;
+		isl,irq-gpio = <&gpa2 5 0x0F>;
+		pinctrl-names = "intersil_light";
+		pinctrl-0 = <&light_irq>;
+		isl,power_reg = "vdd28_sen";
+	};
+};
+
+&led_lp5562_i2c {
+	status = "okay";
+	gpios = <&gpf1 6 0 /* sda */
+		 &gpf1 7 0 /* scl */>;
+	i2c-gpio,delay-us = <2>;	/* ~100khz */
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	m86_led@30 {
+		compatible = "ti,lp5562";
+		reg = <0x30>;
+		led,en_gpio = <&gpf5 4 0>;
+/*
+		pinctrl-names = "on_state", "off_state";
+		pinctrl-0 = <&touchpanel_irq>;
+		pinctrl-1 = <&touchpanel_input>;
+*/
+	};
+};
+
+&wm8998_es705_i2c {
+	status = "okay";
+	clock-frequency = <400000>;
+
+	audio_codec_wm8998: audio-codec-wm8998@1a {
+		compatible = "wlf,wm8998";
+		reg = <0x1a>;
+		interrupts = <6 0 0>;
+		interrupt-parent = <&gpa3>;
+
+		wlf,reset = <&gpd0 1 1>;
+		wlf,ldoena = <&gpj0 2 1>;
+		wlf,micd-ranges = <
+			105 226 /* KEY_MEDIA */
+			270 115 /* KEY_VOLUMEUP */
+			752 114 /* KEY_VOLUMEDOWN */ >;
+		wlf,micd-configs = <0 1 0>;
+		wlf,micbias1 = <2600 0 1 0 0>;
+		wlf,micbias2 = <1800 0 1 0 0>;
+		wlf,micbias3 = <1800 0 1 0 0>;
+		wlf,clk32k-src = <2>; /* MCLK2 */
+		wlf,micd-detect-debounce = <500>;
+		wlf,micd-bias-start-time = <9>;
+		wlf,micd-rate = <5>;
+		wlf,micd-dbtime = <1>;
+		wlf,micd-force-micbias = <1>;
+		wlf,micd-open-circuit-declare = <1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wm8998_reset &wm8998_ldoena &wm8998_irq>;
+
+		AVDD-supply = <&ldo16_reg>; /* AVDD18 */
+		LDOVDD-supply = <&ldo16_reg>; /* DVDD18 */
+		DBVDD-supply = <&ldo16_reg>; /* DVDD18 */
+		DBVDD1-supply = <&ldo16_reg>; /* DVDD18 */
+		DBVDD2-supply = <&ldo16_reg>; /* DVDD18 */
+		DBVDD3-supply = <&ldo16_reg>; /* DVDD18 */
+		CPVDD-supply = <&ldo16_reg>; /* DVDD18 */
+		SPKVDD-supply = <&ldo16_reg>; /* AVDD18 */
+		SPKVDDL-supply = <&ldo16_reg>; /* AVDD18 */
+		SPKVDDR-supply = <&ldo16_reg>; /* AVDD18 */
+	};
+
+	audio_codec_es705: audio-codec-es705@3e {
+		compatible = "audience,escore";
+		reg = <0x3e>;
+		adnc,reset-gpio = <&gpf5 5 1>;
+		adnc,gpioa-gpio = <&gpd5 0 0xf>;
+		adnc,gpiob-gpio = <&gpa1 6 0xf>;
+		adnc,wakeup-gpio = <&gpd5 1 1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&es705_reset &es705_irq &es705_wakeup &es705_api>;
+	};
+};
+
+&nxp_nfc_i2c {
+	status = "okay";
+	samsung,i2c-sda-delay = <100>;
+	samsung,i2c-max-bus-freq = <200000>;
+	nxp_nfc@28 {
+		compatible = "nxp,pn547_nfc";
+		reg = <0x28>;
+		gpios = <&gpa2 1 0xf /* nfc-irq */
+			 &gpc3 4 0x1 /* nfc-dl-req */
+			 &gpc3 0 0x1>; /* nfc-reset */
+		vdd18_nfc-supply = <&ldo27_reg>;
+
+		pinctrl-names ="default";
+		pinctrl-0 = <&nfc_irq &nfc_gpin_fun>;
+	};
+};
+
+&flash_lm3644_i2c {
+	status = "okay";
+	gpios = <&gpc2 4 0 /* sda */
+		 &gpc2 5 0 /* scl */
+		 >;
+	i2c-gpio,delay-us = <2>; /* 250KHz */
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	lm3644@63 {
+		compatible = "ti,leds-lm3644";
+		hwen-gpio = <&gpc0 4 0x01>;
+		strobe-gpio = <&gpc0 0 0x01>;
+		pinctrl-names = "torch-temp";
+		pinctrl-0 = <&torch_temp>;
+		reg = <0x63>;
+	};
+};
+
+#if 0
+&rear_module_i2c {
+	status = "okay";
+	gpios = <&gpc2 0 0 /* sda */
+		 &gpc2 1 0 /* scl */
+		 >;
+	i2c-gpio,delay-us = <2>; /* 250KHz */
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	bu63165@0e {
+		compatible = "meizu,rhom-ois-bu63165";
+		reg = <0x0e>;
+		gpio_vcm_en = <&gpc3 1 0x1>;
+	};
+
+	otp_primax@50 {
+		compatible = "meizu,otp-primax";
+		reg = <0x50>;
+	};
+};
+#else
+&i2c0_isp {
+	status = "okay";
+	samsung,i2c-sda-delay = <100>;
+	samsung,i2c-max-bus-freq = <400000>;
+
+	bu63165@0e {
+		compatible = "meizu,rhom-ois-bu63165";
+		reg = <0x0e>;
+		gpio_vcm_en = <&gpc3 1 0x1>;
+	};
+
+	otp_primax@50 {
+		compatible = "meizu,otp-primax";
+		reg = <0x50>;
+	};
+};
+#endif
+
+&rear_module_i2c {
+	status = "okay";
+	gpios = <&gpc2 0 0 /* sda */
+		 &gpc2 1 0 /* scl */
+		 >;
+	i2c-gpio,delay-us = <2>; /* 250KHz */
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	cam_eeprom@50 {
+		compatible = "meizu,cam_eeprom";
+		reg = <0x50>;
+	};
+};
+
+&vl6180_i2c {
+	status = "okay";
+	gpios = <&gpc2 2 0 /* sda */
+		 &gpc2 3 0 /* scl */
+		 >;
+	i2c-gpio,delay-us = <2>; /* 250KHz */
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	vl6180@29 {
+		compatible = "meizu,st-vl6180";
+		reg = <0x29>;
+		gpio_ps_en = <&gpd7 2 0x1>;
+		gpio_ps_int = <&gpc3 6 0x1>;
+	};
+};
+

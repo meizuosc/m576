@@ -1,0 +1,14 @@
+menuconfig INPUT_FPC_FINGERPRINT
+	bool "fpc fingerprint module"
+	default y
+	help
+	  Say Y here, and a list of fpc fingerprint input drivers will be displayed.
+
+if INPUT_FPC_FINGERPRINT
+
+config INPUT_FPC1020_FINGERPRINT 
+	tristate "FPC fingerprint sensor support"
+	default y
+	depends on SPI_MASTER
+
+endif

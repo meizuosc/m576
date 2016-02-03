@@ -1,0 +1,135 @@
+#define bcm47531_uart   serial_1
+#define bcm43455_uart   serial_4
+
+#define nxp_ese_spi        spi_0
+#define modem_boot_spi     spi_1
+#define audience_es705_spi spi_3
+#define fingerprint_spi    spi_4
+#define securefpc_spi spi_4
+#define securefpc_spi_bus spi4_bus
+#define securefpc_spi_cs_func spi4_cs_func
+#
+#
+#define spi4_cs_func_pinctrl    pinctrl_7
+
+&bcm47531_uart {
+	/* Enable UART channel for gps */
+	status = "okay";
+	gps {
+		compatible = "broadcom,bcm47531_gps";
+		status = "okay";
+		gpios = <&gpj1 2 0 /* GPS_EN */
+			 &gpa2 7 0xF>; /* GPS_HOST_WAKE */
+		pinctrl-names = "default";
+		pinctrl-0=<&gps_hostwake &gps_en>;
+	};
+};
+
+&bcm43455_uart {
+	/* Enable AUD UART channel for bluetooth */
+	status = "okay";
+	bluetooth {
+		compatible = "broadcom,bcm43241";
+
+		gpios = <&gpf5 7 0 /* BT_EN */
+			 &gpf4 0 0 /* BT_DEV_WAKE */
+			 &gpa2 6 0xF>; /* BT_HOST_WAKE */
+
+		pinctrl-names = "default";
+		pinctrl-0=<&bt_hostwake &bt_devwake &bt_en>;
+	};
+};
+
+&audience_es705_spi {
+	status = "okay";
+
+	es705_spi@0 {
+		compatible = "audience,escore";
+		spi-max-frequency = <4000000>;
+		reg = <0x0>;
+
+		adnc,reset-gpio = <&gpf5 5 1>;
+		adnc,gpioa-gpio = <&gpd5 0 0xf>;
+		adnc,gpiob-gpio = <&gpa1 6 0xf>;
+		adnc,wakeup-gpio = <&gpd5 1 1>;
+		adnc,spi-fw-download-speed = <4000000>;
+		adnc,spi-operational-speed = <4000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&es705_reset &es705_irq &es705_wakeup &es705_api>;
+
+		controller-data {
+			cs-gpio = <&gpg4 1 0x2>;
+			samsung,spi-feedback-delay = <0>;
+			samsung,spi-chip-select-mode = <1>;
+		};
+	};
+}; 
+
+&nxp_ese_spi {
+	status = "okay";
+
+	nxp_ese_spi@0 {
+		compatible = "nxp_ese_spi";
+		reg = <0x0>;
+		spi-max-frequency = <4000000>;
+		nxp,spi-irq-gpio = <&gpa3 1 0xF>;
+		nxp,spi-reset-gpio = <&gpc3 7 0x1>;
+
+		pinctrl-names ="default";
+		pinctrl-0 = <&nfc_spi_irq>;
+
+		controller-data {
+			cs-gpio = <&gpd8 1 0x2>;
+			samsung,spi-feedback-delay = <0>;
+			samsung,spi-chip-select-mode = <1>;
+		};
+	};
+};
+
+&modem_boot_spi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	spidev@0 {
+		compatible = "spi_boot_link";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0>;
+		spi-max-frequency = <100000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi1_cs_func>;
+
+		controller-data {
+			samsung,spi-feedback-delay = <0>;
+			samsung,spi-chip-select-mode = <1>;
+		};
+	};
+};
+
+ &spi4_cs_func_pinctrl {
+      spi4_cs_func: spi4-cs-func {
+          samsung,pins = "gpv7-1";
+          samsung,pin-function = <2>;
+          samsung,pin-pud = <3>;
+          samsung,pin-drv = <0>;
+      };
+  };
+
+&securefpc_spi {
+	secure-mode;
+	pinctrl-0 = <&securefpc_spi_bus	&securefpc_spi_cs_func>;
+	status = "ok";
+
+	securefpc_spidev@0{
+		compatible = "spi-fpc-dummy";
+		reg = <0>;
+		spi-max-frequency = <16000000>;
+		//fpc,gpio_reset    = <&gpv7 4 0x1>;
+
+		controller-data {
+			samsung,spi-feedback-delay = <0>;
+			samsung,spi-chip-select-mode = <0>;
+		};
+	};
+};

@@ -1,0 +1,386 @@
+# arch/arm/mach-exynos/Kconfig
+#
+# Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+#		http://www.samsung.com/
+#
+# Licensed under GPLv2
+
+# Configuration options for the EXYNOS4
+
+if ARCH_EXYNOS
+
+menu "SAMSUNG EXYNOS SoCs Support"
+
+config ARCH_EXYNOS5
+	bool "SAMSUNG EXYNOS5"
+	select HAVE_ARM_SCU if SMP
+	select HAVE_SMP
+	select HAVE_EXYNOS5_HSI2C if I2C
+	help
+	  Samsung EXYNOS5 (Cortex-A53/A57) SoC based systems
+
+config ARCH_EXYNOS7
+	bool "SAMSUNG EXYNOS7"
+	select HAVE_ARM_SCU if SMP
+	select HAVE_SMP
+	select HAVE_EXYNOS5_HSI2C if I2C
+	select PM_GENERIC_DOMAINS if PM
+	help
+	  Samsung EXYNOS7 (Cortex-A57/A53) SoC based systems
+
+config SOC_EXYNOS7420
+	bool "SAMSUNG EXYNOS7420"
+	depends on ARCH_EXYNOS7
+	select SAMSUNG_DMADEV
+	select CAL_SYS_PWRDOWN
+	select EXYNOS_SPI_RESET_DURING_DSTOP if CPU_IDLE
+	help
+	  Enable EXYNOS7420 SoC support
+
+config SOC_EXYNOS7420_EVT_0
+	bool "SAMSUNG EXYNOS7420 EVT0"
+	depends on SOC_EXYNOS7420
+	select CAL_SYS_PWRDOWN
+	help
+	  Enable EXYNOS7420 EVT0 SoC support
+
+config SOC_EXYNOS7580
+	bool "SAMSUNG EXYNOS7580"
+	depends on ARCH_EXYNOS7
+	select SAMSUNG_DMADEV
+	select CAL_SYS_PWRDOWN
+	select ARCH_HAS_OPP
+	select ARCH_HAS_BANDGAP
+	help
+	  Enable EXYNOS7580 SoC support
+
+config SOC_EXYNOS5433
+	bool "SAMSUNG EXYNOS5433"
+	default n
+	depends on ARCH_EXYNOS5
+	select PM_GENERIC_DOMAINS if PM
+	select S5P_PM if PM
+	select S5P_SLEEP if SUSPEND
+	select SAMSUNG_DMADEV
+	select EXYNOS_HSI2C_RESET_DURING_DSTOP if CPU_IDLE
+	select EXYNOS_SPI_RESET_DURING_DSTOP if CPU_IDLE
+	select CAL_SYS_PWRDOWN
+	help
+	  Enable EXYNOS5433 SoC support
+
+config EXYNOS_ASV
+	bool "ENABLE EXYNOS ASV"
+	default n
+	depends on ARCH_EXYNOS
+
+config EXYNOS_ASV_DYNAMIC_ABB
+	bool "Enable Dynamic ABB"
+	default n
+	depends on EXYNOS_ASV
+
+config EXYNOS_ASV_SUPPORT_RCC
+	bool "Support RCC Table"
+	default n
+	depends on EXYNOS_ASV
+
+config EXYNOS_ASV_MARGIN_TEST
+	bool "Enable Margin Test"
+	default n
+	depends on EXYNOS_ASV
+
+config CAL_SYS_PWRDOWN
+	bool "Enable CAL for system level power down"
+
+config EXYNOS_ATAGS
+	def_bool "ATAGS based boot for EXYNOS (deprecated)"
+	depends on !ARCH_MULTIPLATFORM
+	depends on ATAGS
+	help
+	  The EXYNOS platform is moving towards being completely probed
+	  through device tree. This enables support for board files using
+	  the traditional ATAGS boot format.
+	  Note that this option is not available for multiplatform builds.
+
+config EXYNOS5_DYNAMIC_CPU_HOTPLUG
+	bool "Dynamic CPU Hotplug support"
+	depends on !SOC_EXYNOS7580
+	depends on CPU_FREQ
+	help
+		Enable Dynamic CPU Hotplug
+		
+config EXYNOS_MARCH_DYNAMIC_CPU_HOTPLUG
+	bool "March Dynamic CPU Hotplug support"
+	depends on !SOC_EXYNOS7580
+	depends on CPU_FREQ
+	help
+		Enable March Dynamic CPU Hotplug
+
+config EXYNOS_CPU_CORE_NUM_PM_QOS
+	bool "Control CPU Core number"
+	depends on !SOC_EXYNOS7580
+	default y
+	help
+		Enable March Dynamic CPU Hotplug
+		
+config APRIL_DYNAMIC_CPU_HOTPLUG_SCHEME
+	bool "New Hotpllug scheme for Test in April"
+	default n
+	help
+	  New Hotplug scheme with cpu num qos
+
+menu "Extensions for Dynamic CPU Hotplug support"
+depends on EXYNOS5_DYNAMIC_CPU_HOTPLUG
+config DEFERRABLE_DM_HOTPLUG
+        bool "Deferrable Hotplug Invoking"
+        help
+          Dynamic CPU Hotplug is invoked deferrable-periodically
+
+          If in doubt, say N.
+endmenu
+
+
+config EXYNOS7580_DYNAMIC_CLUSTER_HOTPLUG
+	bool "Dynamic CLUSTER Hotplug support"
+	depends on SOC_EXYNOS7580
+	depends on CPU_FREQ
+	help
+		Enable Dynamic CLUSTER Hotplug
+
+config EXYNOS_CONTENT_PATH_PROTECTION
+	bool "Exynos Content Path Protection"
+	depends on ARM_TRUSTZONE
+	default n
+	help
+	  Enable content path protection of EXYNOS.
+
+config EXYNOS5_SETUP_MIPIPHY
+	bool
+	depends on (VIDEO_EXYNOS_FIMC_IS || DECON_MIPI_DSI || EXYNOS_MIPI_DSI)
+	default y
+	help
+	  Compile in common setup code for MIPI-CSIS devices
+
+config RESET_REASON_EXYNOS7420
+	bool "Exynos7420 reset reason support"
+	help
+	  Exynos7420 hw and sw reset reasons record.
+
+if EXYNOS_ATAGS
+
+config EXYNOS_DEV_DMA
+	bool
+	help
+	  Compile in amba device definitions for DMA controller
+
+config EXYNOS4_DEV_AHCI
+	bool
+	help
+	  Compile in platform device definitions for AHCI
+
+config EXYNOS4_SETUP_FIMD0
+	bool
+	help
+	  Common setup code for FIMD0.
+
+config EXYNOS4_DEV_USB_OHCI
+	bool
+	help
+	  Compile in platform device definition for USB OHCI
+
+config EXYNOS4_SETUP_I2C1
+	bool
+	help
+	  Common setup code for i2c bus 1.
+
+config EXYNOS4_SETUP_I2C2
+	bool
+	help
+	  Common setup code for i2c bus 2.
+
+config EXYNOS4_SETUP_I2C3
+	bool
+	help
+	  Common setup code for i2c bus 3.
+
+config EXYNOS4_SETUP_I2C4
+	bool
+	help
+	  Common setup code for i2c bus 4.
+
+config EXYNOS4_SETUP_I2C5
+	bool
+	help
+	  Common setup code for i2c bus 5.
+
+config EXYNOS4_SETUP_I2C6
+	bool
+	help
+	  Common setup code for i2c bus 6.
+
+config EXYNOS4_SETUP_I2C7
+	bool
+	help
+	  Common setup code for i2c bus 7.
+
+config EXYNOS4_SETUP_KEYPAD
+	bool
+	help
+	  Common setup code for keypad.
+
+config EXYNOS4_SETUP_SDHCI
+	bool
+	select EXYNOS4_SETUP_SDHCI_GPIO
+	help
+	  Internal helper functions for EXYNOS4 based SDHCI systems.
+
+config EXYNOS4_SETUP_SDHCI_GPIO
+	bool
+	help
+	  Common setup code for SDHCI gpio.
+
+config EXYNOS4_SETUP_FIMC
+	bool
+	help
+	  Common setup code for the camera interfaces.
+
+config EXYNOS4_SETUP_USB_PHY
+	bool
+	help
+	  Common setup code for USB PHY controller
+
+config EXYNOS_SETUP_SPI
+	bool
+	help
+	  Common setup code for SPI GPIO configurations.
+
+endif
+
+comment "Flattened Device Tree based board for EXYNOS SoCs"
+config SUPPORT_CODEGEN
+	bool "Support Code Generator on EXYNOS device tree platform"
+	help
+	  Use device tree files matched with code generator tool.
+
+config MACH_ESPRESSO7420
+	bool "SAMSUNG ESPRESSO7420 Machine using device tree"
+	select ARM_AMBA
+	select CLKSRC_OF
+	select USE_OF
+	select PINCTRL
+	select PINCTRL_EXYNOS
+	select S3C_DEV_RTC
+	select MIGHT_HAVE_PCI
+	select PCI_DOMAINS if PCI
+	help
+	  Machine support for Samsung EXYNOS7420 machine with device tree enabled.
+	  Select this if a fdt blob is available for the EXYNOS7420 SoC based board.
+
+config MACH_AVL7420
+	bool "SAMSUNG AVL7420 Machine using device tree"
+	select ARM_AMBA
+	select CLKSRC_OF
+	select USE_OF
+	select PINCTRL
+	select PINCTRL_EXYNOS
+	select S3C_DEV_RTC
+	select MIGHT_HAVE_PCI
+	select PCI_DOMAINS if PCI
+	help
+	  Machine support for Samsung AVL7420 machine with device tree enabled.
+	  Select this if a fdt blob is available for the AVL7420 SoC based board.
+
+config MACH_M86
+	bool "MEIZU M86 Machine using device tree"
+	select ARM_AMBA
+	select CLKSRC_OF
+	select USE_OF
+	select PINCTRL
+	select PINCTRL_EXYNOS
+	select S3C_DEV_RTC
+	select MIGHT_HAVE_PCI
+	select PCI_DOMAINS if PCI
+	help
+	  Machine support for Meizu M86 machine with device tree enabled.
+	  Select this if a fdt blob is available for the M86 based board.
+
+choice
+	prompt "Kernel type selection for MEIZU MX"
+	depends on MACH_M86
+
+config ENG_KERNEL
+	bool "Build Eng Kernel"
+	help
+		Build Eng kernel
+
+config USER_KERNEL
+	bool "Build User Kernel"
+	help
+		Build User kernel
+
+config UNICOM_KERNEL
+	bool "Build Unicom Kernel"
+	help
+		Build Unicom kernel
+
+config OVERSEAS_KERNEL
+	bool "Build Overseas Kernel"
+	help
+		Build Overseas kernel
+
+config RECOVERY_KERNEL
+	bool "Build Recovery Kernel"
+	help
+		Build Recovery kernel
+
+config CHARGE_KERNEL
+	bool "Build Charge Kernel"
+	help
+		Build Charge kernel
+
+config FACTORY_KERNEL
+	bool "Build Factory Kernel"
+	help
+		Build factory kernel
+endchoice
+
+config MACH_SMDK7580
+	bool "SAMSUNG SMDK7580 Machine using device tree"
+	select ARM_AMBA
+	select USE_OF
+	select PINCTRL
+	select PINCTRL_EXYNOS
+	help
+	  Machine support for Samsung EXYNOS7580 machine with device tree enabled.
+	  Select this if a fdt blob is available for the EXYNOS7580 SoC based board.
+
+endmenu
+
+choice
+	prompt "Type of Periodic Devfreq method"
+	default DELAYED_INVOKING
+	help
+		This option sets which type of Workqueue shall be used for periodic execution. 
+		Such as, DEVFREQ, MIF DTM, Cluster On/Off Monitoring, PPMU Monitoring, and Main DTM
+		
+config DELAYED_INVOKING
+	bool "Use delayed workqueue"
+	help 
+		Use the INIT_DELAYED_WORK() for Devfreq
+		
+config DEFERRABLE_INVOKING
+	bool "Use deferrable workqueue"
+	help 
+		Use the INIT_DEFERRABLE_WORK() for Devfreq
+
+config HYBRID_INVOKING
+	bool "Use hybrid workqueue"
+	help 
+		Use the Hybrid WQ (both DELAYED and DEFERRABLE) for Devfreq
+
+endchoice
+
+# Reset IPs during LPA/DSTOP
+config EXYNOS_SPI_RESET_DURING_DSTOP
+	bool
+
+endif

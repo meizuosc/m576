@@ -1,0 +1,7 @@
+config EXYNOS_DECON_DISP_LCD
+	depends on EXYNOS_DECON_EXYNOS7580
+	bool "Select LCD panel driver"
+
+config EXYNOS_DECON_LCD_S6E3FA0
+	depends on EXYNOS_DECON_DISP_LCD && EXYNOS_MIPI_DSI
+	tristate "S6E3FA0 AMOLED FHD LCD driver(1080 x 1920)"

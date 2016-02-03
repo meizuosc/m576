@@ -1,0 +1,5 @@
+config MZ_ROHM_OIS
+    bool "Meizu Rhom's OIS driver"
+    default n
+    help
+      This is MEIZU M86 RHOM's BU63165 OIS driver.

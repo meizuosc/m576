@@ -1,0 +1,13 @@
+menu "SSCR_DEBUG_TOOLS"
+
+config SSCR_TOOLS
+	bool "Enable sscr_tools"
+	help
+	  Enable sscr_tools such as timestamp.
+
+config SSCR_SEC_LOG
+	bool "Record panic log to files"
+	help
+	  Panic log will be recorded to on 512K reserved memory.
+
+endmenu

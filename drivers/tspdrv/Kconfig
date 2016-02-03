@@ -1,0 +1,15 @@
+menuconfig VIBRATOR
+	tristate "Vibrator"
+	default y
+	help
+	  Say Y to enable Vibrator support.
+
+if VIBRATOR
+menu "TouchSense driver support"
+
+config TSPDRV
+	tristate "TouchSense driver support"
+	default y
+
+endmenu
+endif

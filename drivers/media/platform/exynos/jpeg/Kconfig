@@ -1,0 +1,11 @@
+#
+# Configuration for JPEG
+#
+
+config MEDIA_EXYNOS_JPEG
+	bool "M2M1SHOT JPEG DRIVER"
+	depends on VIDEO_EXYNOS
+	select MEDIA_M2M1SHOT
+	default n
+	help
+	  This is a Samsung JPEG H/W driver for V4.x

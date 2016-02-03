@@ -1,0 +1,9 @@
+menu "TYPE-C support"
+
+config TYPEC_FUSB302
+	tristate "FairChild Fusb302 Type-C USB connector"
+	depends on I2C && SYSFS
+	help
+	  Enable this driver to support FUSB302 Type-C connector
+
+endmenu

@@ -1,0 +1,14 @@
+#
+# exynos7580.txt - a testcase for exynos7580 project
+#
+# Dept    : S/W Solution Dev Team
+# Author  : Solution3 Power Part
+# Update  : 2014.11.17
+#
+b universal5433_defconfig
+b universal7420_defconfig
+b smdk7580_defconfig
+b universal7580_defconfig
+d smdk7580_defconfig
+d universal7580_defconfig
+c 5

@@ -1,0 +1,55 @@
+config EXYNOS_DECON_EXYNOS7580
+	bool "Samsung Exynos Display system (DECON, MIPI)"
+	depends on FB
+
+if EXYNOS_DECON_EXYNOS7580
+config EXYNOS_DECON_FB
+	bool "Samsung DECON Framebuffer driver"
+	depends on EXYNOS_DECON_EXYNOS7580
+	select MEDIA_EXYNOS
+	default y
+	help
+	  Say Y here if you want support for the DECON in Samsung S5P SoCs.
+	  This device produce image data to one of output interfaces.
+
+config EXYNOS_MIPI_DSI
+	bool "Samsung Exynos MIPI-DSI driver"
+	depends on EXYNOS_DECON_EXYNOS7580
+	default y
+	help
+	  Enable MIPI-DSI driver.
+
+config DECON_MIPI_DSI_PKTGO
+	bool "Samsung Exynos MIPI-DSI Packet Go"
+	depends on EXYNOS_DECON_EXYNOS7580 && EXYNOS_MIPI_DSI
+	default n
+	help
+	  Enable/disable MIPI-DSI Packet Go function
+
+config DECON_LPD_DISPLAY
+        bool "Decon Low Power Display MODE"
+        depends on EXYNOS_DECON_EXYNOS7580
+        default y
+
+config CONFIG_DECON_LPD_DISPLAY_WITH_CAMERA
+        bool "Decon Low Power Display MODE with Camera"
+        depends on DECON_LPD_DISPLAY
+
+config DECON_PM_QOS_REQUESTS
+	bool "Decon PM QoS requests to DVFS drivers"
+	depends on EXYNOS_DECON_EXYNOS7580
+	default y
+
+config FB_WINDOW_UPDATE
+        bool "DECON window update mode"
+        depends on EXYNOS_DECON_EXYNOS7580
+        default n
+
+config DECON_BLOCKING_MODE
+	bool "DECON blocking mode"
+        depends on EXYNOS_DECON_EXYNOS7580
+        default y
+
+source "drivers/video/exynos/decon_7580/panels/Kconfig"
+
+endif

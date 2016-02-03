@@ -1,0 +1,60 @@
+	Debug fs for the s2mps15 with Exynos
+
+Gyeongtaek Lee (gt82.lee@samsung.com)
+
+1. What it does?
+This debug file system shows the power down configuration of the S2MPS15 pmic.
+
+2. Definitions
+(1) Mode
+There is three modes.
+- ON: Regulator is always on.
+- SUSPEND: Regulator is off during sleep.
+
+3. How to use
+
+3.1. Enable the debug fs for the PMIC.
+(1) Enable debug fs configuration.
+$ make menuconfig --> Kernel hacking --> Debug Filesystem
+(2) Build and download the kernel.
+
+3.2. Viewing the configurations at a look
+(1) Turn the device on and access the terminal.
+(2) Change directory to debug fs for the PMIC.
+$ cd /sys/kernel/debug/s2mps15
+(3) Cat mode.
+$ cat mode
+NAME    MODE
+====================
+BUCK1   SUSPEND
+BUCK2   SUSPEND
+BUCK3   SUSPEND
+......
+
+3.3. Viewing the each configuration
+(1) Turn the device on and access the terminal.
+(2) Change directory to debug fs for the PMIC.
+$ cd /sys/kernel/debug/s2mps15
+(3) Change directory to specific regulator
+$ cd /LDO1
+(4) Cat mode
+$ cat mode
+NORMAL
+
+3.4. Changing the power down configuration
+(1) Turn the device on and access the terminal.
+(2) Change directory to debug fs.
+$ cd /sys/kernel/debug/s2mps15
+(3) Change directory to specific regulator
+$ cd LDO34
+(3) Echo new mode and verify it.
+# echo "on" > mode
+# cat mode
+ON
+
+4. What should be done after?
+
+4.1 Modify the mode table.
+Modify regulator-initial-mode of each regulator on dts file.
+Ex. To make buck1 to always on, change regulator-initial-mode of
+hsi2c@13660000->s2mps15_pmic@66->regulators->buck1_reg: BUCK1 to 3.

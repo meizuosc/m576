@@ -1,0 +1,162 @@
+config MODULE_ALL_INCLUDE
+	bool "Build and include all modules"
+	depends on VIDEO_EXYNOS_FIMC_IS
+	default n
+	help
+	  all modules are included
+config CAMERA_SENSOR_8B1
+        bool "Use 8B1 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use 8B1 camera sensor.
+config CAMERA_SENSOR_6D1
+        bool "Use 6D1 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use 6D1 camera sensor.
+config CAMERA_SENSOR_8B1_OBJ
+        bool "Use 8B1 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 8B1 camera sensor.
+config CAMERA_SENSOR_6D1_OBJ
+        bool "Use 6D1 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 6D1 camera sensor.
+config CAMERA_SENSOR_6B2_OBJ
+        bool "Use 6B2 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 6B2 camera sensor.
+config CAMERA_SENSOR_6A3_OBJ
+        bool "Use 6A3 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 6A3 camera sensor.
+config CAMERA_SENSOR_IMX135_OBJ
+        bool "Use IMX135 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build IMX135 camera sensor.
+config CAMERA_SENSOR_IMX134_OBJ
+        bool "Use IMX134 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build IMX134 camera sensor.
+config CAMERA_SENSOR_3L2_OBJ
+        bool "Use 3L2 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 3L2 camera sensor.
+config CAMERA_SENSOR_2P2_OBJ
+        bool "Use 2P2 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 2P2 camera sensor.
+config CAMERA_SENSOR_IMX230_OBJ
+        bool "Use IMX230 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default y
+        help
+          Use to build IMX230 camera sensor.
+config CAMERA_SENSOR_2P2_12M_OBJ
+        bool "Use 2P2_12M camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 2P2_12M camera sensor.
+config CAMERA_SENSOR_2T2_OBJ
+        bool "Use 2T2 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 2T2 camera sensor.
+config CAMERA_SENSOR_2P3_OBJ
+        bool "Use 2P3 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 2P3 camera sensor.
+config CAMERA_SENSOR_3H5_OBJ
+        bool "Use 3H5 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 3H5 camera sensor.
+config CAMERA_SENSOR_3H7_OBJ
+        bool "Use 3H7 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 3H7 camera sensor.
+config CAMERA_SENSOR_3H7_SUNNY_OBJ
+        bool "Use 3H7_SUNNY camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 3H7_SUNNY camera sensor.
+config CAMERA_SENSOR_4E5_OBJ
+        bool "Use 4E5 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 4E5 camera sensor.
+config CAMERA_SENSOR_IMX175_OBJ
+        bool "Use IMX175 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build IMX175 camera sensor.
+config CAMERA_SENSOR_IMX219_OBJ
+        bool "Use IMX219 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build IMX219 camera sensor.
+config CAMERA_SENSOR_IMX240_OBJ
+        bool "Use IMX240 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build IMX240 camera sensor.
+config CAMERA_SENSOR_4H5_OBJ
+        bool "Use 4H5 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 4H5 camera sensor.
+config CAMERA_SENSOR_SR261_OBJ
+        bool "Use SR261 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build SR261 camera sensor.
+config CAMERA_SENSOR_4E6_OBJ
+        bool "Use 4E6 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 4E6 camera sensor.
+config CAMERA_SENSOR_4E6_C2_OBJ
+        bool "Use 4E6 camera sensor with companion"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default n
+        help
+          Use to build 4E6 camera sensor.
+config CAMERA_SENSOR_OV5670_OBJ
+        bool "Use OV5670 camera sensor"
+        depends on VIDEO_EXYNOS_FIMC_IS
+        default y
+        help
+          Use to build OV5670 camera sensor.

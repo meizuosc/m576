@@ -1,0 +1,286 @@
+# drivers/staging/samsung/Kconfig
+#
+# Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+#		http://www.samsung.com/
+#
+# Licensed under GPLv2
+
+config SEC_EXT
+	bool "Samsung TN extension Feature"
+	default n
+
+config SEC_REBOOT
+	bool "Samsung TM reboot extension Feature"
+	default n
+	help
+	  Samsung TN reboot extension Feature. Do additional work when reboot.
+
+config SEC_MISC
+	bool "Samsung TM Misc Feature"
+	default n
+	help
+	  Samsung TN Misc extension Feature. Do additional work when Misc.
+
+config SEC_MEM
+	bool "Samsung TM memory information Feature"
+	default n
+	help
+	  Samsung TN memory inforamtion Feature, Get information from proc node.
+
+comment "sec sysfs Feature"
+config SEC_SYSFS
+	bool "Samsung sec sysfs Feature"
+	default y
+	depends on SEC_EXT
+	help
+	  Samsung sysfs name 'sec' directory create.
+
+comment "Debugging Feature"
+menuconfig SEC_DEBUG
+	bool "Samsung TN Ramdump Feature"
+	default y
+	depends on SEC_EXT
+	help
+	  Samsung TN Ramdump Feature. Use INFORM3 and magic number at 0xc0000000.
+
+if SEC_DEBUG
+config SEC_DEBUG_FUPLOAD_DUMP_MORE
+	bool "Dump more information at forced upload"
+	default n
+	help
+	  More information is printed out when a forced upload happens.
+	  It uses customized dump functions instead of panic call.
+
+config SEC_DEBUG_SCHED_LOG
+	bool "Samsung Scheduler Logging Feature"
+	default n
+	help
+	  Samsung Scheduler Logging Feature for Debug use.
+
+config SEC_DEBUG_SOFTIRQ_LOG
+	bool "Samsung Softirq Logging Feature"
+	default n
+	depends on SEC_DEBUG_SCHED_LOG
+	help
+	  Samsung Softirq Logging Feature for Debug use.
+	  This option enables us to log softirq enter/exit.
+	  It is not only hard-irq which results in scheduler lockup,
+	  To be more clear we need to see also softirq logs.
+
+config SEC_DEBUG_SCHED_LOG_NONCACHED
+	bool "Samsung Scheduler Logging on noncached buf"
+	depends on SEC_DEBUG_SCHED_LOG
+	default n
+	help
+	  This option enables sec_debug_sched_log_noncached support.
+	  It can support non-cached sched log in RAM dump and We don't
+	  need to concern cache flush status for analyzing sudden
+	  lockup issue.
+
+config SEC_DEBUG_TIMER_LOG
+	bool "Samsung Timer Logging Feature"
+	default n
+	help
+	  Samsung Timer Logging Feature for Debug use.
+
+config SEC_DEBUG_SEMAPHORE_LOG
+	bool "Samsung Semaphore Logging Feature"
+	default n
+	help
+	  Samsung Semaphore Logging Feature for Debug use.
+
+config SEC_DEBUG_USER
+	bool "Panic on Userspace fault"
+	default y
+	help
+	  Panic on Userspace fault
+
+config SEC_DEBUG_PM_TEMP
+	bool "Temporary Logging for Sleep/Wakeup Issue"
+	default n
+	help
+	  Verbose Log on Sleep/Wakeup.
+
+config SEC_DEBUG_IRQ_EXIT_LOG
+	bool "Temporary Logging for IRQ delay"
+	default n
+	help
+	  Verbose Logging for IRQ delay.
+
+config SEC_DEBUG_AUXILIARY_LOG
+	bool "Samsung Auxiliary Logging on noncached buf"
+	default n
+	help
+	  This option enables sec_auxiliary_log support.
+	  we can log repeated information insuitable for kernel log like DVFS
+	  or power domain control information.
+	  It can support non-cached auxiliary log in RAM dump and We don't
+	  need to concern cache flush status for analyzing sudden
+	  system hang issue.
+
+config SEC_DEBUG_FUPLOAD_DUMP_MORE
+	bool "Dump more information at forced upload"
+	default n
+	help
+	  More information is printed out when a forced upload happens.
+	  It uses customized dump functions instead of panic call.
+
+config SEC_DEBUG_UNHANDLED_FAULT_SAFE
+	bool "No extra dump around registers on unhandled fault"
+	default n
+	help
+	  Preventing unhandled fault occur infinitely.
+	  Some unhandled fault(eg. external abort) can cause a fault again
+	  while accessing memory address of registers.
+
+config SEC_DEBUG_CHECK_TASKPTR_FAULT
+	bool "Pre-check task pointer is valid in page fault"
+	default n
+	help
+	  Preventing stack overflow caused by invalid current task pointer.
+
+config SEC_DEBUG_UMP_ALLOC_FAIL
+	bool "Show warning message when UMP allcation fails"
+	default n
+	help
+	  When UMP allocation fails there's no way to figure out the reason.
+	  For UMP and Mali is supposed to allocate per 1 page,
+	  we should take a good look at this failure.
+	  This only shows the alloc fail warning.
+
+config SEC_DEBUG_LIST_PANIC
+	bool "Panic when list corruption detected"
+	default n
+	help
+	  Panic when list structure corruption detected.
+	  Sometimes list corruptions are reported.
+	  But it reports only with WARN level.
+	  This will immediately stop the system.
+
+config SEC_DEBUG_IOVMM
+	bool "panic when iovmm alloc fails"
+	default n
+	help 
+	  panic when iovmm allocation fails
+	  this will immediately stop the system.
+
+config SEC_FILE_LEAK_DEBUG
+	bool "Panic when file leak detected"
+	default n
+	help
+	  Panic when file leak detected.
+
+config SEC_DEBUG_TIMERQUEUE_CORRUPTION
+	bool "Panic when timerqueue corruption detected"
+	default n
+	help
+	  Panic when timerqueue corruption detected.
+
+menuconfig SEC_WATCHDOG_RESET
+	bool "exynos5410 watchdog reset to exit from lockup"
+	depends on SOC_EXYNOS5410
+	default n
+	help
+	  Use watchdog reset to exit from lockup
+
+if SEC_WATCHDOG_RESET
+config SEC_WATCHDOG_PET_TIME
+	int "sec watchdog kicking time interval value"
+	default 5
+endif
+
+endif
+
+config SEC_LOG
+	default n
+	bool "Enable support for sec_log" if EMBEDDED
+	depends on PRINTK && SEC_EXT
+	help
+	  This option enables sec_log support. This provides combined
+	  log buffer for both bootloader and kernel. It also preserves
+	  previous content before reboot.
+
+config SEC_LOG_NONCACHED
+	default n
+	bool "Enable non cached kernel sec_log support" if EMBEDDED
+	depends on SEC_LOG
+	help
+	  This option enables sec_non_cached_klog support.  It can
+	  support non-cached kernel log in RAM dump and We don't need
+	  to concern cache flush status for analyzing sudden lockup
+	  issue.
+
+config SEC_LOG_LAST_KMSG
+	default n
+	bool "Enable /proc/last_kmsg support" if EMBEDDED
+	depends on SEC_LOG
+	help
+	  This option enables /proc/last_kmsg support.
+
+config SEC_AVC_LOG
+	default n
+	bool "Enable avc audit log support" if EMBEDDED
+	depends on SEC_DEBUG
+	help
+	  This option enables additional log buffer for audit log.
+
+config SEC_DEBUG_TSP_LOG
+	default n
+	bool "Enable tsp log support" if EMBEDDED
+	depends on SEC_DEBUG
+	help
+	  This option enables additional log buffer for tsp log.
+
+config SEC_DEBUG_TIMA_LOG
+	default y
+	bool "Enable tima log support" if EMBEDDED
+	depends on SEC_DEBUG && TIMA
+	help
+	  This option enables additional log buffer for tima log.
+
+config SEC_DEBUG_PMU_LOG
+	default n
+	bool "Enable pmu log support" if EMBEDDED
+	help
+	  Samsung PMU Loging Feature for debugging use.
+
+config SEC_DEBUG_CMU_LOG
+	default n
+	bool "Enable cmu log support" if EMBEDDED
+	help
+	  Samsung CMU Loging Feature for debugging use.
+
+config SEC_DEBUG_SUBSYS
+	default n
+	bool "Enable summary dump support" if EMBEDDED
+	help
+	  Samsung Summary dump Feature for debugging use.
+
+choice
+	prompt "Forced panic type"
+	default SEC_DEBUG_ISR_CRASH
+
+	config SEC_DEBUG_ISR_CRASH
+		bool "Call panic() in ISR context"
+		help
+		  Call panic() in ISR context when forced crash keys are pressed.
+
+	config SEC_DEBUG_INPUT_HANDLER_CRASH
+		bool "Call panic() through input handler function"
+		help
+		  Call panic() through input handler function when forced crash keys are pressed.
+endchoice
+
+comment "Samsung TN Power Management Options"
+menuconfig SEC_PM
+	bool "Samsung TN Power Management"
+	default y
+	help
+	  Samsung TN Power Management.
+
+config SEC_PM_DEBUG
+	bool "Enable Samsung TN Power management debug support"
+	default y
+	depends on SEC_PM
+	help
+	  Enable Samsung TN Power management debug support.

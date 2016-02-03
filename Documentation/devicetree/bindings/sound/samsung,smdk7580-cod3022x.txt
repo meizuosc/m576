@@ -1,0 +1,23 @@
+Samsung SMDK7580 audio complex
+
+Required properties:
+- compatible : "samsung,smdk7580-cod3022x"
+- samsung,audio-cpu: The phandle of the Samsung I2S0 controller
+- samsung,audio-codec: The phandle of the Codec node
+- samsung,auxdev: The phandle of auxdev node
+
+Example:
+
+sound {
+	compatible = "samsung,smdk7580-cod3022x";
+	samsung,audio-cpu = <&i2s0	/* primary */
+				&i2s0	/* secondary */
+				&audio_cp_dummy
+				&audio_bt_dummy>;
+	samsung,audio-codec = <&audio_codec_cod3022x
+				&audio_codec_cod3022x
+				&audio_codec_dummy
+				&audio_codec_dummy>;
+	samsung,auxdev = <&s2801x>;
+	status = "okay";
+};

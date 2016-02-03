@@ -1,0 +1,112 @@
+config EXYNOS_DECON
+	bool "Samsung Exynos Display system (VPP, DECON, MIPI, HDMI)"
+	depends on FB
+
+if EXYNOS_DECON
+config USE_VSYNC_SKIP
+	bool "Vsync Skip Enable"
+	depends on EXYNOS_DECON
+	default n
+	help
+	  Say Y here if you want to enable vsync skip feature for DFS solution.
+
+config EXYNOS_DECON_FB
+	bool "Samsung DECON Framebuffer driver"
+	depends on EXYNOS_DECON
+	select MEDIA_EXYNOS
+	default y
+	help
+	  Say Y here if you want support for the DECON in Samsung S5P SoCs.
+	  This device produce image data to one of output interfaces.
+
+config EXYNOS_DECON_DPU
+	bool "Samsung DPU driver"
+	depends on EXYNOS_DECON_FB
+	default n
+	help
+	  Say Y here if you want to support for DPU in Samsung SoCs.
+
+config VIDEO_EXYNOS_HDMI
+	bool "Samsung HDMI driver"
+	depends on EXYNOS_DECON
+	depends on !SOC_EXYNOS7580
+	depends on VIDEO_V4L2
+	select SWITCH
+	select FB_MODE_HELPERS
+	default y
+	help
+	  Say Y here if you want support for the HDMI output
+	  interface in S5P Samsung SoC. The driver can be compiled
+	  as module. It is an auxiliary driver, that exposes a V4L2
+	  subdev for use by other drivers. This driver requires
+	  hdmiphy driver to work correctly.
+
+config VIDEO_EXYNOS_HDMI_AUDIO_I2S
+	bool "Enable HDMI audio using I2S path"
+	depends on EXYNOS_DECON
+	depends on VIDEO_EXYNOS_HDMI
+	depends on SND_SAMSUNG_I2S
+	default y
+	help
+	  Enables HDMI audio through I2S path.
+
+config VIDEO_EXYNOS_HDMI_CEC
+	tristate "Samsung HDMI CEC Driver"
+	depends on EXYNOS_DECON
+	depends on VIDEO_EXYNOS_HDMI
+	depends on VIDEO_DEV && VIDEO_V4L2 && I2C
+	default n
+	help
+	  Say Y here if you want support for the HDMI CEC
+	  interface in S5P Samsung SoC. The driver can be compiled
+	  as module.
+
+config EXYNOS_MIPI_DSI
+	bool "Samsung Exynos MIPI-DSI driver"
+	depends on EXYNOS_DECON
+	default y
+	help
+	  Enable MIPI-DSI driver.
+
+config DECON_MIPI_DSI_PKTGO
+	bool "Samsung Exynos MIPI-DSI Packet Go"
+	depends on EXYNOS_MIPI_DSI
+	default n
+	help
+	  Enable/disable MIPI-DSI Packet Go function
+
+config DECON_LPD_DISPLAY
+        bool "Decon Low Power Display MODE"
+        depends on EXYNOS_DECON
+        default y
+
+config FB_WINDOW_UPDATE
+        bool "DECON window update mode"
+        depends on EXYNOS_DECON
+        default n
+
+config DECON_BLOCKING_MODE
+	bool "DECON blocking mode"
+        depends on EXYNOS_DECON
+        default y
+
+config DECON_EVENT_LOG
+	bool "Display sub-system event logger (DECON/DSIM/VPP)"
+        depends on DEBUG_INFO && EXYNOS_DECON
+        default y
+
+config DECON_DISPLAY_LOGO
+	bool "Display kernel logo"
+	depends on EXYNOS_DECON
+	default n
+
+config DECON_SIMULATE_DISPLAY
+	bool "Decon simulate display"
+	depends on EXYNOS_DECON
+	default n
+
+source "drivers/video/exynos/decon/vpp/Kconfig"
+
+endif
+
+source "drivers/video/exynos/decon/panels/Kconfig"

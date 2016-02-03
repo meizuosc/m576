@@ -1,0 +1,11 @@
+#
+# SoC audio configuration
+#
+
+config SND_DSPG_DBMD2
+	bool "Dspg Voice Trigger dbd2"
+	default n
+	help
+	  This is DSPG Voice trigger Authentication Device.
+	  The chip version is dbd2.
+

@@ -1,0 +1,26 @@
+#
+# (C) COPYRIGHT 2012 ARM Limited. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the GNU General Public License version 2
+# as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+#
+# A copy of the licence is included with the program, and can also be obtained from Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+#
+
+
+obj-$(CONFIG_MALI_T6XX) += t6xx/
+obj-$(CONFIG_MALI_MIDGARD) += midgard/
+obj-$(CONFIG_MALI_MIDGARD_WK04) += midgard_wk04/
+obj-$(CONFIG_MALI400) += mali400/
+ifeq ($(CONFIG_MALI_T7XX),y)
+	ifeq ($(CONFIG_MALI_R5P0),y)
+		obj-y += t7xx/r5p0/
+	endif
+endif
+ifeq ($(CONFIG_MALI_T72X),y)
+	ifeq ($(CONFIG_MALI_R5P0_T72X),y)
+		obj-y += t72x/r5p0/
+	endif
+endif

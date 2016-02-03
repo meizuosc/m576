@@ -1,0 +1,39 @@
+config SND_SOC_WM8998_CODEC_MASTER
+	tristate
+
+config SND_SOC_MEIZU_AUDIO
+	tristate "Meizu Audio Driver: Exynos5430 + WM8998 + ES705 + ESS9018K2M"
+	depends on SND_SOC_SAMSUNG
+	default y
+	select SND_SAMSUNG_I2S
+	select SND_SAMSUNG_AUDSS
+	select SND_SAMSUNG_IOMMU
+	select SND_SOC_WM8998
+	select SND_SOC_ESS9018K2M
+	select SND_SOC_ES705_ESCORE
+	select SND_SOC_ES_SPI
+	select SND_SOC_ES_HIGH_BW_BUS_SPI
+	select SND_SOC_ES_RUNTIME_SUSPEND_MODE_CVQ
+	select SND_SOC_ES_CDEV
+	select SND_SOC_ES_SPI_STREAMDEV
+	select SND_SOC_ES_VS
+	select SND_SOC_ES_WAKEUP_GPIO
+	select MFD_ARIZONA
+	select MFD_ARIZONA_I2C
+	select MFD_WM8998
+	select REGULATOR_ARIZONA
+	select SWITCH_ARIZONA
+	select SND_SOC_WM8998_CODEC_MASTER
+	help
+		say y if you want to add support for soc audio on the meizu.
+
+config SND_SOC_DUMMY_AUDIO
+	tristate "Dummy Audio Driver: a dummy sound card for debug"
+	default n
+	select SND_SAMSUNG_AUDSS
+	select SND_SAMSUNG_IOMMU
+	select SND_SOC_DUMMY_CODEC
+	help
+		say y if you want to add support for soc dummy audio.
+
+# source "sound/soc/meizu/audience/Kconfig"

@@ -1,0 +1,354 @@
+/*
+ * arch/arm/mach-exynos/secmem.c
+ *
+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include <linux/device.h>
+#include <linux/uaccess.h>
+#include <linux/fs.h>
+#include <linux/miscdevice.h>
+#include <linux/mutex.h>
+#include <linux/pm_runtime.h>
+#include <linux/sched.h>
+#include <linux/slab.h>
+#include <linux/mm.h>
+#include <linux/dma-mapping.h>
+#include <linux/export.h>
+#include <linux/pm_qos.h>
+#include <linux/dma-contiguous.h>
+#include <linux/exynos_ion.h>
+#include <linux/smc.h>
+
+#include <asm/memory.h>
+#include <asm/cacheflush.h>
+
+#include <mach/secmem.h>
+
+#define SECMEM_DEV_NAME	"s5p-smem"
+struct miscdevice secmem;
+struct secmem_crypto_driver_ftn *crypto_driver;
+
+uint32_t instance_count;
+
+#if defined(CONFIG_SOC_EXYNOS5433)
+static uint32_t secmem_regions[] = {
+	ION_EXYNOS_ID_G2D_WFD,
+	ION_EXYNOS_ID_VIDEO,
+	ION_EXYNOS_ID_SECTBL,
+	ION_EXYNOS_ID_MFC_FW,
+	ION_EXYNOS_ID_MFC_NFW,
+};
+
+static char *secmem_regions_name[] = {
+	"g2d_wfd",	/* 0 */
+	"video",	/* 1 */
+	"sectbl",       /* 2 */
+	"mfc_fw",       /* 3 */
+	"mfc_nfw",      /* 4 */
+	NULL
+};
+#elif defined(CONFIG_SOC_EXYNOS7420)
+static uint32_t secmem_regions[] = {
+	ION_EXYNOS_ID_G2D_WFD,
+	ION_EXYNOS_ID_VIDEO,
+	ION_EXYNOS_ID_VIDEO_EXT,
+	ION_EXYNOS_ID_MFC_FW,
+	ION_EXYNOS_ID_MFC_NFW,
+};
+
+static char *secmem_regions_name[] = {
+	"g2d_wfd",	/* 0 */
+	"video",	/* 1 */
+	"video_ext",	/* 2 */
+	"mfc_fw",	/* 3 */
+	"mfc_nfw",	/* 4 */
+	NULL
+};
+#endif
+
+static bool drm_onoff;
+static DEFINE_MUTEX(drm_lock);
+static DEFINE_MUTEX(smc_lock);
+
+struct secmem_info {
+	struct device	*dev;
+	bool		drm_enabled;
+};
+
+struct protect_info {
+	uint32_t dev;
+	uint32_t enable;
+};
+
+#define SECMEM_IS_PAGE_ALIGNED(addr) (!((addr) & (~PAGE_MASK)))
+
+int drm_enable_locked(struct secmem_info *info, bool enable)
+{
+	if (drm_onoff == enable) {
+		pr_err("%s: DRM is already %s\n", __func__, drm_onoff ? "on" : "off");
+		return -EINVAL;
+	}
+
+	drm_onoff = enable;
+	/*
+	 * this will only allow this instance to turn drm_off either by
+	 * calling the ioctl or by closing the fd
+	 */
+	info->drm_enabled = enable;
+
+	return 0;
+}
+
+static int secmem_open(struct inode *inode, struct file *file)
+{
+	struct miscdevice *miscdev = file->private_data;
+	struct device *dev = miscdev->this_device;
+	struct secmem_info *info;
+
+	info = kzalloc(sizeof(struct secmem_info), GFP_KERNEL);
+	if (!info)
+		return -ENOMEM;
+
+	info->dev = dev;
+	file->private_data = info;
+
+	mutex_lock(&drm_lock);
+	instance_count++;
+	mutex_unlock(&drm_lock);
+
+	return 0;
+}
+
+static int secmem_release(struct inode *inode, struct file *file)
+{
+	struct secmem_info *info = file->private_data;
+
+	/* disable drm if we were the one to turn it on */
+	mutex_lock(&drm_lock);
+	instance_count--;
+	if (instance_count == 0) {
+		if (info->drm_enabled) {
+			int ret;
+			ret = drm_enable_locked(info, false);
+			if (ret < 0)
+				pr_err("fail to lock/unlock drm status. lock = %d\n", false);
+		}
+	}
+
+	mutex_unlock(&drm_lock);
+
+	kfree(info);
+	return 0;
+}
+
+static long secmem_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	struct secmem_info *info = filp->private_data;
+	static int nbufs = 0;
+
+	switch (cmd) {
+	case (uint32_t)SECMEM_IOC_GET_CHUNK_NUM:
+	{
+		nbufs = sizeof(secmem_regions) / sizeof(uint32_t);
+
+		if (nbufs == 0)
+			return -ENOMEM;
+
+		if (copy_to_user((void __user *)arg, &nbufs, sizeof(int)))
+			return -EFAULT;
+		break;
+	}
+	case (uint32_t)SECMEM_IOC_CHUNKINFO:
+	{
+		struct secchunk_info minfo;
+
+		if (copy_from_user(&minfo, (void __user *)arg, sizeof(minfo)))
+			return -EFAULT;
+
+		memset(&minfo.name, 0, MAX_NAME_LEN);
+
+		if (minfo.index < 0)
+			return -EINVAL;
+
+		if (minfo.index >= nbufs) {
+			minfo.index = -1; /* No more memory region */
+		} else {
+			if (ion_exynos_contig_heap_info(secmem_regions[minfo.index],
+					&minfo.base, &minfo.size))
+				return -EINVAL;
+
+			memcpy(minfo.name, secmem_regions_name[minfo.index], MAX_NAME_LEN);
+		}
+
+		if (copy_to_user((void __user *)arg, &minfo, sizeof(minfo)))
+			return -EFAULT;
+		break;
+	}
+#if defined(CONFIG_ION) || defined(CONFIG_ION_EXYNOS)
+	case (uint32_t)SECMEM_IOC_GET_FD_PHYS_ADDR:
+	{
+		struct ion_client *client;
+		struct secfd_info fd_info;
+		struct ion_fd_data data;
+		struct ion_handle *ion_handle;
+		size_t len;
+
+		if (copy_from_user(&fd_info, (int __user *)arg,
+					sizeof(fd_info)))
+			return -EFAULT;
+
+		client = ion_client_create(ion_exynos, "DRM");
+		if (IS_ERR(client)) {
+			pr_err("%s: Failed to get ion_client of DRM\n",
+				__func__);
+			return -ENOMEM;
+		}
+
+		data.fd = fd_info.fd;
+		ion_handle = ion_import_dma_buf(client, data.fd);
+		pr_debug("%s: fd from user space = %d\n",
+				__func__, fd_info.fd);
+		if (IS_ERR(ion_handle)) {
+			pr_err("%s: Failed to get ion_handle of DRM\n",
+				__func__);
+			ion_client_destroy(client);
+			return -ENOMEM;
+		}
+
+		if (ion_phys(client, ion_handle, &fd_info.phys, &len)) {
+			pr_err("%s: Failed to get phys. addr of DRM\n",
+				__func__);
+			ion_client_destroy(client);
+			ion_free(client, ion_handle);
+			return -ENOMEM;
+		}
+
+		pr_debug("%s: physical addr from kernel space = 0x%08x\n",
+				__func__, (unsigned int)fd_info.phys);
+
+		ion_free(client, ion_handle);
+		ion_client_destroy(client);
+
+		if (copy_to_user((void __user *)arg, &fd_info, sizeof(fd_info)))
+			return -EFAULT;
+		break;
+	}
+#endif
+	case (uint32_t)SECMEM_IOC_GET_DRM_ONOFF:
+		smp_rmb();
+		if (copy_to_user((void __user *)arg, &drm_onoff, sizeof(int)))
+			return -EFAULT;
+		break;
+	case (uint32_t)SECMEM_IOC_SET_DRM_ONOFF:
+	{
+		int ret, val = 0;
+
+		if (copy_from_user(&val, (int __user *)arg, sizeof(int)))
+			return -EFAULT;
+
+		mutex_lock(&drm_lock);
+		if ((info->drm_enabled && !val) ||
+		    (!info->drm_enabled && val)) {
+			/*
+			 * 1. if we enabled drm, then disable it
+			 * 2. if we don't already hdrm enabled,
+			 *    try to enable it.
+			 */
+			ret = drm_enable_locked(info, val);
+			if (ret < 0)
+				pr_err("fail to lock/unlock drm status. lock = %d\n", val);
+		}
+		mutex_unlock(&drm_lock);
+		break;
+	}
+	case (uint32_t)SECMEM_IOC_GET_CRYPTO_LOCK:
+	{
+		break;
+	}
+	case (uint32_t)SECMEM_IOC_RELEASE_CRYPTO_LOCK:
+	{
+		break;
+	}
+	case (uint32_t)SECMEM_IOC_SET_TZPC:
+	{
+		break;
+	}
+	case (uint32_t)SECMEM_IOC_SET_VIDEO_EXT_PROC:
+	{
+		int val, ret;
+
+		if (copy_from_user(&val, (int __user *)arg, sizeof(int)))
+			return -EFAULT;
+		mutex_lock(&smc_lock);
+		ret = exynos_smc((uint32_t)(SMC_DRM_VIDEO_PROC), val, 0, 0);
+		if (ret) {
+			pr_err("Failed to control VIDEO EXT region protection. prot = %d\n", val);
+			mutex_unlock(&smc_lock);
+			return -ENOMEM;
+		}
+
+		mutex_unlock(&smc_lock);
+		break;
+	}
+	default:
+		return -ENOTTY;
+	}
+
+	return 0;
+}
+
+void secmem_crypto_register(struct secmem_crypto_driver_ftn *ftn)
+{
+	crypto_driver = ftn;
+}
+EXPORT_SYMBOL(secmem_crypto_register);
+
+void secmem_crypto_deregister(void)
+{
+	crypto_driver = NULL;
+}
+EXPORT_SYMBOL(secmem_crypto_deregister);
+
+static const struct file_operations secmem_fops = {
+	.owner		= THIS_MODULE,
+	.open		= secmem_open,
+	.release	= secmem_release,
+	.compat_ioctl = secmem_ioctl,
+	.unlocked_ioctl = secmem_ioctl,
+};
+
+struct miscdevice secmem = {
+	.minor	= MISC_DYNAMIC_MINOR,
+	.name	= SECMEM_DEV_NAME,
+	.fops	= &secmem_fops,
+};
+
+static int __init secmem_init(void)
+{
+	int ret;
+
+	ret = misc_register(&secmem);
+	if (ret) {
+		pr_err("%s: SECMEM can't register misc on minor=%d\n",
+			__func__, MISC_DYNAMIC_MINOR);
+		return ret;
+	}
+
+	crypto_driver = NULL;
+
+	return 0;
+}
+
+static void __exit secmem_exit(void)
+{
+	misc_deregister(&secmem);
+}
+
+module_init(secmem_init);
+module_exit(secmem_exit);

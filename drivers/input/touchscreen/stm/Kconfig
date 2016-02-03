@@ -1,0 +1,18 @@
+#
+# STMicroelectronics TOUCH driver configuration
+#
+
+config TOUCHSCREEN_FTS
+	tristate "STMicroelectronics i2c multitouch touchscreen with FingerTipS"
+	depends on I2C
+	help
+		Say Y here to enable STMicroelectronics touchscreen support.
+		If unsure, say N.
+		To compile this driver as a module, choose M here: the
+		module will be called STM_ts.
+
+config KEY_LED_POWER_DISABLE
+	bool "KEY LED POWER DISABLE"
+	help
+		Say Y if you want to disable LED key button.
+		Usually you might want to set it N.

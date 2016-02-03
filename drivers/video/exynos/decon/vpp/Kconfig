@@ -1,0 +1,7 @@
+config EXYNOS_VPP
+	bool "Samsung Exynos Video Post Processor driver"
+	depends on EXYNOS_DECON
+	depends on !SOC_EXYNOS7580
+	default y
+	help
+	  Enable VPP driver.

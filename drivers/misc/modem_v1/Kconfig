@@ -1,0 +1,41 @@
+comment "Samsung Mobile Modem Driver (SVNET2) V1 for Memory-type Interface"
+menuconfig SEC_MODEM_IF_V1
+	bool "Samsung Mobile Modem Interface"
+	default n
+	---help---
+	  Samsung Modem Interface Driver.
+
+config BOOT_DEVICE_SPI
+	bool "boot device: SPI"
+	depends on SEC_MODEM_IF_V1
+	default y
+
+config UMTS_MODEM_SS333
+	bool "modem chip : SEC SS333"
+	depends on SEC_MODEM_IF_V1
+	default y
+
+config LINK_DEVICE_LLI
+	bool "modem drvier link device LLI"
+	depends on SEC_MODEM_IF_V1
+	default y
+
+config LINK_POWER_MANAGEMENT_WITH_FSM
+	bool "POWER_MANAGEMENT_WITH_FSM"
+	depends on LINK_DEVICE_LLI
+	default y
+
+config WORKQUEUE_FRONT
+	bool "IPC: SPI workqueue front"
+	depends on SEC_MODEM_IF_V1
+	default n
+
+config SIM_DETECT
+	bool "SIM_DETECT pin"
+	depends on SEC_MODEM_IF_V1
+	default n
+
+config SIM_SLOT_SWITCH
+	bool "SIM_SLOT_SWITCH"
+	depends on SEC_MODEM_IF_V1
+	default n

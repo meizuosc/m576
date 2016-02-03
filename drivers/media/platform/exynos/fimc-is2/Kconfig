@@ -1,0 +1,60 @@
+config VIDEO_EXYNOS_FIMC_IS
+	bool "Exynos FIMC-IS2 (Image Subsystem) driver"
+	depends on VIDEO_EXYNOS
+	select MEDIA_EXYNOS
+	select USE_VENDER_FEATURE if SEC_DEBUG
+	default n
+	help
+	  This is a v4l2 driver for exynos FIMC-IS device.
+config USE_VENDER_FEATURE
+	bool "Use vendor specific features"
+        depends on VIDEO_EXYNOS_FIMC_IS
+	default n
+	help
+          Use the vender specfic features.
+
+config ENABLE_HAL3_2_META_INTERFACE
+	bool "Use HAL 3_2 Meta interface"
+        depends on VIDEO_EXYNOS_FIMC_IS
+	default n
+	help
+          Use the unified meta in 3.2 and 1.0 HAL.
+
+config CAMERA_SUPPORT_PDAF
+	bool "Open PDAF Device with FIMC LITE"
+	depends on VIDEO_EXYNOS_FIMC_IS
+	default n
+	help
+	  Open PDAF Device with FIMC LITE.
+
+config CAMERA_EEPROM_SUPPORT
+	bool "Enable to eeprom"
+	depends on VIDEO_EXYNOS_FIMC_IS
+	default y
+	help
+	  Enable to eeprom.
+
+config CAMERA_EEPROM_SUPPORT_REAR
+	bool "Enable to rear eeprom"
+	depends on VIDEO_EXYNOS_FIMC_IS
+	default y
+	help
+	  Enable to rear eeprom.
+
+config CAMERA_CUSTOM_SUPPORT
+	bool "Support CUSTOM usecase"
+	depends on VIDEO_EXYNOS_FIMC_IS
+	default y
+	help
+	  Enable to use customer usecase.
+
+config MEIZU_CAMERA_SPECIAL
+    bool "Meizu camera special feature"
+	depends on VIDEO_EXYNOS_FIMC_IS
+    default n
+    help
+     Enable to make use of meizu camera special feature.
+
+source "drivers/media/platform/exynos/fimc-is2/sensor/Kconfig"
+source "drivers/media/platform/exynos/fimc-is2/ischain/Kconfig"
+source "drivers/media/platform/exynos/fimc-is2/ois/Kconfig"

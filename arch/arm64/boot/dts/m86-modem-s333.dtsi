@@ -1,0 +1,249 @@
+/*
+ * SAMSUNG ESPRESSO7420 board device tree source
+ *
+ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+/* modem_interface_driver: UMTS modem, 2G/3G/4G, Samsung Electronics Shannon333 (SS333) */
+
+/ {
+
+	mif_pdata {
+		compatible = "sec_modem,modem_pdata";
+
+		mif,name = "ss333";
+		mif,modem_net = <0>;
+		mif,modem_type = <8>;       /* ss333 */
+		mif,modem_attr = <0x01>;    /* LEGACY_COMMAND */
+		mif,link_types = <0x200>;    /* LINKDEV_LLI */
+		mif,link_name = "lli";
+		mif,link_attrs = <0x39>;    /* MEM_DUMP | MEM_BOOT | MEM_IPC */
+		mif,use_handover = <0>;
+		mif,ipc_version = <50>;
+
+		mif,num_iodevs = <16>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&cp_on &cp_reset &cp_wakeup &ap_status &pda_active &phone_active &ap_wakeup &cp_status &ap_dump_noti>;
+
+		mif,gpio_cp_on = <&gpg0 0 0x1>;
+		mif,gpio_cp_wakeup = <&gpr3 7 0x1>;
+		mif,gpio_ap_status = <&gpr3 1 0x1>;
+		mif,gpio_ap_dump_noti = <&gpc1 0 0x1>;
+
+		mif,gpio_cp_reset = <&gpg1 2 0x1>;
+		mif,gpio_pda_active = <&gpc0 2 0x1>;
+
+		mif,gpio_phone_active = <&gpa1 4 0xf>;
+		mif,gpio_ap_wakeup = <&gpa0 6 0xf>;
+		mif,gpio_cp_status = <&gpa0 4 0xf>;
+
+		iodevs {
+			io_device_0 {
+				iod,name = "umts_ipc0";
+				iod,id = <245>;
+				iod,format = <0>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "RIL";
+				iod,ul_num_buffers = <16>;
+				iod,ul_buffer_size = <4096>;
+				iod,dl_num_buffers = <16>;
+				iod,dl_buffer_size = <4096>;
+			};
+			io_device_1 {
+				iod,name = "umts_ipc1";
+				iod,id = <246>;
+				iod,format = <0>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "RIL";
+				iod,ul_num_buffers = <16>;
+				iod,ul_buffer_size = <4096>;
+				iod,dl_num_buffers = <16>;
+				iod,dl_buffer_size = <4096>;
+			};
+			io_device_2 {
+				iod,name = "umts_rfs0";
+				iod,id = <41>;
+				iod,format = <1>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "RFS";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <32>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_3 {
+				iod,name = "umts_router";
+				iod,id = <21>;
+				iod,format = <1>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "Data Router";
+				iod,ul_num_buffers = <16>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <16>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_4 {
+				iod,name = "umts_dm0";
+				iod,id = <81>;
+				iod,format = <1>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "DIAG";
+				iod,ul_num_buffers = <4>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <128>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_5 {
+				iod,name = "umts_loopback";
+				iod,id = <82>;
+				iod,format = <1>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "LOOPBACK";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_6 {
+				iod,name = "rmnet0";
+				iod,id = <1>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_7 {
+				iod,name = "rmnet1";
+				iod,id = <2>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_8 {
+				iod,name = "rmnet2";
+				iod,id = <3>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_9 {
+				iod,name = "rmnet3";
+				iod,id = <4>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_10 {
+				iod,name = "rmnet4";
+				iod,id = <5>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_11 {
+				iod,name = "rmnet5";
+				iod,id = <6>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_12 {
+				iod,name = "rmnet6";
+				iod,id = <7>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_13 {
+				iod,name = "rmnet7";
+				iod,id = <8>;
+				iod,format = <1>;
+				iod,io_type = <1>;
+				iod,links = <0x200>;
+				iod,attrs = <0x82>;
+				iod,app = "NET";
+				iod,ul_num_buffers = <32>;
+				iod,ul_buffer_size = <2048>;
+				iod,dl_num_buffers = <256>;
+				iod,dl_buffer_size = <2048>;
+			};
+			io_device_14 {
+				iod,name = "multipdp";
+				iod,id = <0>;
+				iod,format = <3>;
+				iod,io_type = <2>;
+				iod,links = <0x200>;
+				iod,attrs = <0x02>;
+				iod,app = "RIL";
+			};
+			io_device_15 {
+				iod,name = "umts_boot0";
+				iod,id = <241>;
+				iod,format = <4>;
+				iod,io_type = <0>;
+				iod,links = <0x200>;
+				iod,attrs = <0x02>;
+				iod,app = "CBD";
+			};
+		}; /* end of iodevs */
+	}; /* end of mif_pdata */
+};

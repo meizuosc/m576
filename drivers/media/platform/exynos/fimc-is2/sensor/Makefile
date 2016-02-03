@@ -1,0 +1,2 @@
+obj-$(CONFIG_VIDEO_EXYNOS_FIMC_IS) += module/
+obj-$(CONFIG_VIDEO_EXYNOS_FIMC_IS) += csi/
