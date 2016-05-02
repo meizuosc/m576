@@ -189,8 +189,8 @@ struct sdcardfs_inode_info {
 	 */
 	perm_t perm;
 	userid_t userid;
-	uid_t d_uid;
-	gid_t d_gid;
+	kuid_t d_uid;
+	kgid_t d_gid;
 	mode_t d_mode;
 
 	struct inode vfs_inode;
@@ -204,9 +204,9 @@ struct sdcardfs_dentry_info {
 };
 
 struct sdcardfs_mount_options {
-	uid_t fs_low_uid;
-	gid_t fs_low_gid;
-	gid_t write_gid;
+	kuid_t fs_low_uid;
+	kgid_t fs_low_gid;
+	kgid_t write_gid;
 	int split_perms;
 	derive_t derive;
 	lower_fs_t lower_fs;
@@ -403,14 +403,14 @@ extern appid_t get_appid(void *pkgl_id, const char *app_name);
 extern int check_caller_access_to_name(struct inode *parent_node, const char* name,
                                         derive_t derive, int w_ok, int has_rw);
 extern int open_flags_to_access_mode(int open_flags);
-extern void * packagelist_create(gid_t write_gid);
+extern void * packagelist_create(kgid_t write_gid);
 extern void packagelist_destroy(void *pkgl_id);
 extern int packagelist_init(void);
 extern void packagelist_exit(void);
 
 /* for derived_perm.c */
 extern void setup_derived_state(struct inode *inode, perm_t perm,
-			userid_t userid, uid_t uid, gid_t gid, mode_t mode);
+			userid_t userid, kuid_t uid, kgid_t gid, mode_t mode);
 extern void get_derived_permission(struct dentry *parent, struct dentry *dentry);
 extern void update_derived_permission(struct dentry *dentry);
 extern int need_graft_path(struct dentry *dentry);
@@ -432,7 +432,7 @@ static inline void unlock_dir(struct dentry *dir)
 	dput(dir);
 }
 
-static inline int prepare_dir(const char *path_s, uid_t uid, gid_t gid, mode_t mode)
+static inline int prepare_dir(const char *path_s, kuid_t uid, kgid_t gid, mode_t mode)
 {
 	int err;
 	struct dentry *dent;

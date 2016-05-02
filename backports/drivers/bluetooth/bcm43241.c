@@ -28,7 +28,6 @@
 #include <linux/irq.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
-#include <linux/rfkill.h>
 #include <linux/serial_core.h>
 #include <linux/wakelock.h>
 #include <linux/of_gpio.h>
@@ -49,7 +48,6 @@
 
 extern s3c_wake_peer_t s3c2410_serial_wake_peer[CONFIG_SERIAL_SAMSUNG_UARTS];
 
-static struct rfkill *bt_rfkill;
 #ifdef BT_LPM_ENABLE
 static int bt_wake_state = -1;
 #endif
@@ -76,7 +74,7 @@ struct bcm_bt_gpio {
 
 static struct bcm_bt_lpm bt_lpm;
 static struct bcm_bt_gpio bt_gpio;
-static int bt_is_running=0;
+static int bt_is_running = 0;
 static int bt_uport = -1;
 
 int check_bt_op(void)
@@ -125,12 +123,13 @@ static int bcm43241_bt_get_mac_addr(unsigned char *buf)
 	return 0;
 }
 
-static int bcm43241_bt_rfkill_set_power(void *data, bool blocked)
+static int bcm43241_bt_set_power(bool power)
 {
 	unsigned char bt_buf[6] = {0};
-	/* rfkill_ops callback. Turn transmitter on when blocked is false */
-	if (!blocked) {
-		pr_info("[BT] Bluetooth Power On.\n");
+
+	/* Turn transmitter on when needed */
+	if (power) {
+		pr_debug("[BT] Bluetooth Power On.\n");
 
 		bcm43241_bt_get_mac_addr(bt_buf);
 #ifdef BT_LPM_ENABLE
@@ -147,7 +146,7 @@ static int bcm43241_bt_rfkill_set_power(void *data, bool blocked)
 		gpio_set_value(bt_gpio.bt_en, 1);
 
 	} else {
-		pr_info("[BT] Bluetooth Power Off.\n");
+		pr_debug("[BT] Bluetooth Power Off.\n");
 
 #ifdef BT_LPM_ENABLE
 		if (gpio_get_value(bt_gpio.bt_en) && irq_set_irq_wake(bt_gpio.irq, 0)) {
@@ -158,12 +157,9 @@ static int bcm43241_bt_rfkill_set_power(void *data, bool blocked)
 		bt_is_running = 0;
 		gpio_set_value(bt_gpio.bt_en, 0);
 	}
+
 	return 0;
 }
-
-static const struct rfkill_ops bcm43241_bt_rfkill_ops = {
-	.set_block = bcm43241_bt_rfkill_set_power,
-};
 
 #ifdef BT_LPM_ENABLE
 static void set_wake_locked(int wake)
@@ -396,6 +392,37 @@ static ssize_t bt_wake_store(struct device *dev,
 static DEVICE_ATTR(bt_wake, S_IRUGO|S_IWUSR | S_IWGRP,
 		bt_wake_show, bt_wake_store);
 
+static ssize_t bt_enable_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gpio_get_value(bt_gpio.bt_en));
+}
+
+static ssize_t bt_enable_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	bool power = false;
+
+	switch (buf[0]) {
+		case '0':
+			power = false;
+			break;
+		case '1':
+			power = true;
+			break;
+		default:
+			pr_err("unkown input:%s\n", buf);
+			return -EINVAL;
+	}
+
+	bcm43241_bt_set_power(power);
+
+	return count;
+}
+
+static DEVICE_ATTR(bt_enable, S_IRUGO | S_IWUSR | S_IWGRP,
+		bt_enable_show, bt_enable_store);
+
 static int bcm43241_bluetooth_probe(struct platform_device *pdev)
 {
 	int rc = 0;
@@ -429,7 +456,7 @@ static int bcm43241_bluetooth_probe(struct platform_device *pdev)
 		return rc;
 	}
 
-	bt_gpio.bt_wake =of_get_gpio(pdev->dev.of_node, 1);
+	bt_gpio.bt_wake = of_get_gpio(pdev->dev.of_node, 1);
 
 	rc = gpio_request(bt_gpio.bt_wake, "btwake_gpio");
 
@@ -454,39 +481,9 @@ static int bcm43241_bluetooth_probe(struct platform_device *pdev)
 	gpio_direction_output(bt_gpio.bt_wake, 1);
 	gpio_direction_output(bt_gpio.bt_en, 0);
 
-	bt_rfkill = rfkill_alloc("bcm43241 Bluetooth", &pdev->dev,
-				RFKILL_TYPE_BLUETOOTH, &bcm43241_bt_rfkill_ops,
-				NULL);
-
-	if (unlikely(!bt_rfkill)) {
-		pr_err("[BT] bt_rfkill alloc failed.\n");
-		gpio_free(bt_gpio.bt_hostwake);
-		gpio_free(bt_gpio.bt_wake);
-		gpio_free(bt_gpio.bt_en);
-		return -ENOMEM;
-	}
-
-	rfkill_init_sw_state(bt_rfkill, 0);
-
-	rc = rfkill_register(bt_rfkill);
-
-	if (unlikely(rc)) {
-		pr_err("[BT] bt_rfkill register failed.\n");
-		rfkill_destroy(bt_rfkill);
-		gpio_free(bt_gpio.bt_hostwake);
-		gpio_free(bt_gpio.bt_wake);
-		gpio_free(bt_gpio.bt_en);
-		return -1;
-	}
-
-	rfkill_set_sw_state(bt_rfkill, true);
-
 #ifdef BT_LPM_ENABLE
 	ret = bcm_bt_lpm_init(pdev);
 	if (ret) {
-		rfkill_unregister(bt_rfkill);
-		rfkill_destroy(bt_rfkill);
-
 		gpio_free(bt_gpio.bt_hostwake);
 		gpio_free(bt_gpio.bt_wake);
 		gpio_free(bt_gpio.bt_en);
@@ -501,15 +498,15 @@ static int bcm43241_bluetooth_probe(struct platform_device *pdev)
 	if (device_create_file(&pdev->dev, &dev_attr_bt_wake))
 		pr_info("[BT] bcm4339 bt_wake sys file create failed\n");
 
+	if (device_create_file(&pdev->dev, &dev_attr_bt_enable))
+		pr_info("[BT] bcm4339 bt_enable sysfs file creation failed\n");
+
 	pr_info("[BT] bcm43241_bluetooth_probe End \n");
 	return rc;
 }
 
 static int bcm43241_bluetooth_remove(struct platform_device *pdev)
 {
-	rfkill_unregister(bt_rfkill);
-	rfkill_destroy(bt_rfkill);
-
 	gpio_free(bt_gpio.bt_en);
 	gpio_free(bt_gpio.bt_wake);
 	gpio_free(bt_gpio.bt_hostwake);

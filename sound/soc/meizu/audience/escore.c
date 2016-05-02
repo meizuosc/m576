@@ -1313,6 +1313,7 @@ int meizu_escore_request_firmware(const struct firmware **fw,
 	unsigned long timeout = jiffies + msecs_to_jiffies(60 * 1000); // 60 seconds
 	static const char * const fw_path[] = {
 		"/etc/firmware/",
+		"/system/etc/firmware/",
 		"/data/data/com.android.settings/files",
 		"/data/data/com.audience.voiceqmultikeyword/files/",
 	};

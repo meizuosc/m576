@@ -39,7 +39,7 @@ struct packagelist_data {
 	DECLARE_HASHTABLE(appid_with_rw,7);
 	struct mutex hashtable_lock;
 	struct task_struct *thread_id;
-	gid_t write_gid;
+	kgid_t write_gid;
 	char *strtok_last;
 	char read_buf[STRING_BUF_SIZE];
 	char event_buf[STRING_BUF_SIZE];
@@ -88,7 +88,7 @@ int get_caller_has_rw_locked(void *pkgl_id, derive_t derive) {
 
 	appid = multiuser_get_app_id(current_fsuid());
 	mutex_lock(&pkgl_dat->hashtable_lock);
-	ret = contain_appid_key(pkgl_dat, (void *)(uintptr_t)appid);
+	ret = contain_appid_key(pkgl_dat, (void *)(uintptr_t)__kuid_val(appid));
 	mutex_unlock(&pkgl_dat->hashtable_lock);
 	//printk(KERN_INFO "sdcardfs: %s: appid=%d, ret=%d\n", __func__, (int)appid, ret);
 	return ret;
@@ -106,7 +106,7 @@ appid_t get_appid(void *pkgl_id, const char *app_name)
 	hash_for_each_possible(pkgl_dat->package_to_appid, hash_cur, hlist, hash) {
 		//printk(KERN_INFO "sdcardfs: %s: %s\n", __func__, (char *)hash_cur->key);
 		if (!strcasecmp(app_name, hash_cur->key)) {
-			ret_id = (appid_t)hash_cur->value;
+			ret_id = (appid_t)KUIDT_INIT(hash_cur->value);
 			mutex_unlock(&pkgl_dat->hashtable_lock);
 			//printk(KERN_INFO "=> app_id: %d\n", (int)ret_id);
 			return ret_id;
@@ -114,7 +114,7 @@ appid_t get_appid(void *pkgl_id, const char *app_name)
 	}
 	mutex_unlock(&pkgl_dat->hashtable_lock);
 	//printk(KERN_INFO "=> app_id: %d\n", 0);
-	return 0;
+	return GLOBAL_ROOT_UID;
 }
 
 /* Kernel has already enforced everything we returned through
@@ -139,7 +139,7 @@ int check_caller_access_to_name(struct inode *parent_node, const char* name,
 
 	/* Root always has access; access for any other UIDs should always
 	 * be controlled through packages.list. */
-	if (current_fsuid() == 0) {
+	if (uid_eq(current_fsuid(), GLOBAL_ROOT_UID)) {
 		return 1;
 	}
 
@@ -147,7 +147,7 @@ int check_caller_access_to_name(struct inode *parent_node, const char* name,
 	 * parent or holds sdcard_rw. */
 	if (w_ok) {
 		if (parent_node &&
-			(current_fsuid() == SDCARDFS_I(parent_node)->d_uid)) {
+			(uid_eq(current_fsuid(), SDCARDFS_I(parent_node)->d_uid))) {
 			return 1;
 		}
 		return has_rw;
@@ -288,7 +288,7 @@ static int read_package_list(struct packagelist_data *pkgl_dat) {
 			token = strtok_r(pkgl_dat->gids_buf, ",", &pkgl_dat->strtok_last);
 			while (token != NULL) {
 				if (!kstrtoul(token, 10, &ret_gid) &&
-						(ret_gid == pkgl_dat->write_gid)) {
+						(ret_gid == __kgid_val(pkgl_dat->write_gid))) {
 					ret = insert_int_to_null(pkgl_dat, (void *)(uintptr_t)appid, 1);
 					if (ret) {
 						sys_close(fd);
@@ -389,7 +389,7 @@ interruptable_sleep:
 	return res;
 }
 
-void * packagelist_create(gid_t write_gid)
+void * packagelist_create(kgid_t write_gid)
 {
 	struct packagelist_data *pkgl_dat;
         struct task_struct *packagelist_thread;

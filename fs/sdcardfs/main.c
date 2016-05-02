@@ -58,10 +58,10 @@ static int parse_options(struct super_block *sb, char *options, int silent,
 	char *string_option;
 
 	/* by default, we use AID_MEDIA_RW as uid, gid */
-	opts->fs_low_uid = AID_MEDIA_RW;
-	opts->fs_low_gid = AID_MEDIA_RW;
+	opts->fs_low_uid = KUIDT_INIT(AID_MEDIA_RW);
+	opts->fs_low_gid = KGIDT_INIT(AID_MEDIA_RW);
 	/* by default, we use AID_SDCARD_RW as write_gid */
-	opts->write_gid = AID_SDCARD_RW;
+	opts->write_gid = KGIDT_INIT(AID_SDCARD_RW);
 	/* default permission policy
 	 * (DERIVE_NONE | DERIVE_LEGACY | DERIVE_UNIFIED) */
 	opts->derive = DERIVE_NONE;
@@ -90,17 +90,17 @@ static int parse_options(struct super_block *sb, char *options, int silent,
 		case Opt_uid:
 			if (match_int(&args[0], &option))
 				return 0;
-			opts->fs_low_uid = option;
+			opts->fs_low_uid = KUIDT_INIT(option);
 			break;
 		case Opt_gid:
 			if (match_int(&args[0], &option))
 				return 0;
-			opts->fs_low_gid = option;
+			opts->fs_low_gid = KGIDT_INIT(option);
 			break;
 		case Opt_wgid:
 			if (match_int(&args[0], &option))
 				return 0;
-			opts->write_gid = option;
+			opts->write_gid = KGIDT_INIT(option);
 			break;
 		case Opt_split:
 			opts->split_perms=1;
@@ -154,9 +154,9 @@ invalid_option:
 	if (*debug) {
 		printk( KERN_INFO "sdcardfs : options - debug:%d\n", *debug);
 		printk( KERN_INFO "sdcardfs : options - uid:%d\n",
-							opts->fs_low_uid);
+							__kuid_val(opts->fs_low_uid));
 		printk( KERN_INFO "sdcardfs : options - gid:%d\n",
-							opts->fs_low_gid);
+							__kgid_val(opts->fs_low_gid));
 	}
 
 	return 0;
@@ -287,7 +287,7 @@ static int sdcardfs_read_super(struct super_block *sb, const char *dev_name,
 		switch(sb_info->options.derive) {
 			case DERIVE_NONE:
 				setup_derived_state(sb->s_root->d_inode,
-					PERM_ROOT, 0, AID_ROOT, AID_SDCARD_RW, 00775);
+					PERM_ROOT, GLOBAL_ROOT_UID, KUIDT_INIT(AID_ROOT), KGIDT_INIT(AID_SDCARD_RW), 00775);
 				sb_info->obbpath_s = NULL;
 				break;
 			case DERIVE_LEGACY:
@@ -295,7 +295,7 @@ static int sdcardfs_read_super(struct super_block *sb, const char *dev_name,
 				 * places user_id at the top directory level, with the actual roots
 				 * just below that. Shared OBB path is also at top level. */
 				setup_derived_state(sb->s_root->d_inode,
-				        PERM_LEGACY_PRE_ROOT, 0, AID_ROOT, AID_SDCARD_R, 00771);
+				        PERM_LEGACY_PRE_ROOT, GLOBAL_ROOT_UID, KUIDT_INIT(AID_ROOT), KGIDT_INIT(AID_SDCARD_R), 00771);
 				/* initialize the obbpath string and lookup the path
 				 * sb_info->obb_path will be deactivated by path_put
 				 * on sdcardfs_put_super */
@@ -312,7 +312,7 @@ static int sdcardfs_read_super(struct super_block *sb, const char *dev_name,
 				/* Unified multiuser layout which places secondary user_id under
 				 * /Android/user and shared OBB path under /Android/obb. */
 				setup_derived_state(sb->s_root->d_inode,
-						PERM_ROOT, 0, AID_ROOT, AID_SDCARD_R, 00771);
+						PERM_ROOT, GLOBAL_ROOT_UID, KUIDT_INIT(AID_ROOT), KGIDT_INIT(AID_SDCARD_R), 00771);
 
 				sb_info->obbpath_s = kzalloc(PATH_MAX, GFP_KERNEL);
 				snprintf(sb_info->obbpath_s, PATH_MAX, "%s/Android/obb", dev_name);

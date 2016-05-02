@@ -242,10 +242,10 @@
 			gpios = <&gpa0 7 0xf>;
 		};
 		button@4 {
-			label = "gpio-keys: KEY_HOME";
+			label = "gpio-keys: KEY_LEFTMETA";
 			interrupts = <2 0 0>;
 			interrupt-parent = <&gpa3>;
-			linux,code = <102>;
+			linux,code = <125>;
 			gpios = <&gpa3 2 0xf>;
 			gpio-key,wakeup = <1>;
 		};

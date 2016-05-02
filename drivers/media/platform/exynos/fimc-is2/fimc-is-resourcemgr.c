@@ -307,6 +307,20 @@ int fimc_is_resource_open(struct fimc_is_resourcemgr *resourcemgr, u32 rsc_type,
 	BUG_ON(!resourcemgr->private_data);
 	BUG_ON(rsc_type >= RESOURCE_TYPE_MAX);
 
+	/* Only allow camera service and related tasks to access fimc2 devices as
+	 * the fimc2 devices are not supposed to be open/closed individually. This
+	 * will cause a wrong open count value stored and prevents further access
+	 * to these devices. As a result, Camera app and any other app that
+	 * accesses these devices will always fail in the first boot.
+	 */
+	if (strncmp(current->comm, "Binder_", 7) != 0 &&
+	    strncmp(current->comm, "startPictureInt", TASK_COMM_LEN - 1) != 0 &&
+	    strncmp(current->comm, "camera_service", TASK_COMM_LEN - 1) != 0) {
+		err("access for '%s' rejected", current->comm);
+		ret = -EPERM;
+		goto p_err;
+        }
+
 	resource = GET_RESOURCE(resourcemgr, rsc_type);
 	core = (struct fimc_is_core *)resourcemgr->private_data;
 	result = NULL;

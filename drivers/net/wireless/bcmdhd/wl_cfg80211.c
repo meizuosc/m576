@@ -600,11 +600,6 @@ int wl_cfg80211_get_ioctl_version(void);
  */
 static __used u32 wl_find_msb(u16 bit16);
 
-/*
- * rfkill support
- */
-static int wl_setup_rfkill(struct bcm_cfg80211 *cfg, bool setup);
-static int wl_rfkill_set(void *data, bool blocked);
 #ifdef DEBUGFS_CFG80211
 static s32 wl_setup_debugfs(struct bcm_cfg80211 *cfg);
 static s32 wl_free_debugfs(struct bcm_cfg80211 *cfg);
@@ -11678,7 +11673,6 @@ static s32 wl_init_priv(struct bcm_cfg80211 *cfg)
 	cfg->pwr_save = !!(wiphy->flags & WIPHY_FLAG_PS_ON_BY_DEFAULT);
 	cfg->roam_on = false;
 	cfg->active_scan = true;
-	cfg->rf_blocked = false;
 	cfg->vsdb_mode = false;
 #if defined(BCMSDIO)
 	cfg->wlfc_on = false;
@@ -11899,11 +11893,6 @@ s32 wl_cfg80211_attach(struct net_device *ndev, void *context)
 		goto cfg80211_attach_out;
 	}
 
-	err = wl_setup_rfkill(cfg, TRUE);
-	if (err) {
-		WL_ERR(("Failed to setup rfkill %d\n", err));
-		goto cfg80211_attach_out;
-	}
 #ifdef DEBUGFS_CFG80211
 	err = wl_setup_debugfs(cfg);
 	if (err) {
@@ -11939,7 +11928,6 @@ s32 wl_cfg80211_attach(struct net_device *ndev, void *context)
 	return err;
 
 cfg80211_attach_out:
-	wl_setup_rfkill(cfg, FALSE);
 	wl_free_wdev(cfg);
 	return err;
 }
@@ -11958,9 +11946,8 @@ void wl_cfg80211_detach(void *para)
 #if defined(COEX_DHCP)
 	wl_cfg80211_btcoex_deinit();
 	cfg->btcoex_info = NULL;
-#endif 
+#endif
 
-	wl_setup_rfkill(cfg, FALSE);
 #ifdef DEBUGFS_CFG80211
 	wl_free_debugfs(cfg);
 #endif
@@ -14666,60 +14653,6 @@ done:
 	return (pos - cmd);
 }
 #endif /* WL_SUPPORT_AUTO_CHANNEL */
-
-static const struct rfkill_ops wl_rfkill_ops = {
-	.set_block = wl_rfkill_set
-};
-
-static int wl_rfkill_set(void *data, bool blocked)
-{
-	struct bcm_cfg80211 *cfg = (struct bcm_cfg80211 *)data;
-
-	WL_DBG(("Enter \n"));
-	WL_DBG(("RF %s\n", blocked ? "blocked" : "unblocked"));
-
-	if (!cfg)
-		return -EINVAL;
-
-	cfg->rf_blocked = blocked;
-
-	return 0;
-}
-
-static int wl_setup_rfkill(struct bcm_cfg80211 *cfg, bool setup)
-{
-	s32 err = 0;
-
-	WL_DBG(("Enter \n"));
-	if (!cfg)
-		return -EINVAL;
-	if (setup) {
-		cfg->rfkill = rfkill_alloc("brcmfmac-wifi",
-			wl_cfg80211_get_parent_dev(),
-			RFKILL_TYPE_WLAN, &wl_rfkill_ops, (void *)cfg);
-
-		if (!cfg->rfkill) {
-			err = -ENOMEM;
-			goto err_out;
-		}
-
-		err = rfkill_register(cfg->rfkill);
-
-		if (err)
-			rfkill_destroy(cfg->rfkill);
-	} else {
-		if (!cfg->rfkill) {
-			err = -ENOMEM;
-			goto err_out;
-		}
-
-		rfkill_unregister(cfg->rfkill);
-		rfkill_destroy(cfg->rfkill);
-	}
-
-err_out:
-	return err;
-}
 
 #ifdef DEBUGFS_CFG80211
 /**

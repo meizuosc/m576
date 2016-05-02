@@ -33,6 +33,76 @@
 #define WAKEUP_STAT_EINT		(1 << 0)
 #define WAKEUP_STAT_RTC_ALARM		(1 << 1)
 
+void __iomem *wake_ext_int_pend;
+static int resume_wakeup_flag = 0;
+extern u32 exynos_eint_to_pin_num(int eint);
+
+static void init_resume_wakeup_flag(void)
+{
+	resume_wakeup_flag = 0;
+}
+
+static int is_speedup_irq(struct irq_desc *desc, char *irq_name)
+{
+	return strstr(desc->action->name, irq_name) != NULL;
+}
+
+static void set_resume_wakeup_flag(int irq)
+{
+	struct irq_desc *desc;
+	desc = irq_to_desc(irq);
+
+	if (desc && desc->action && desc->action->name) {
+		if (is_speedup_irq(desc, "KEY_HOME")
+			|| is_speedup_irq(desc, "KEY_LEFTMETA")
+			|| is_speedup_irq(desc, "KEY_POWER")
+			|| is_speedup_irq(desc, "fts")
+			|| is_speedup_irq(desc, "synaptics_dsx")) {
+			resume_wakeup_flag = 1;
+		}
+	}
+}
+
+int get_resume_wakeup_flag(void)
+{
+	int flag = resume_wakeup_flag;
+
+	pr_debug("%s: flag = %d\n", __func__, flag);
+	/* Clear it for next calling */
+	init_resume_wakeup_flag();
+
+	return flag;
+}
+
+static void exynos_show_wakeup_reason_eint(void)
+{
+	int bit, i;
+	long unsigned int ext_int_pend;
+	unsigned long eint_wakeup_mask;
+	bool found = 0;
+
+	eint_wakeup_mask = __raw_readl(EXYNOS_PMU_EINT_WAKEUP_MASK);
+	init_resume_wakeup_flag();
+
+	for (i = 0; i < 4; i++) {
+		ext_int_pend = __raw_readl(wake_ext_int_pend + i*0x4);
+		for_each_set_bit(bit, &ext_int_pend, 8) {
+			u32 gpio;
+			int irq;
+			if (eint_wakeup_mask & (1 << (i * 8 + bit)))
+				continue;
+			gpio = exynos_eint_to_pin_num((i * 8) + bit);
+			irq = gpio_to_irq(gpio);
+			set_resume_wakeup_flag(irq);
+			log_wakeup_reason(irq);
+			found = 1;
+		}
+	}
+
+	if (!found)
+		pr_info("Resume caused by unknown EINT\n");
+}
+
 static void exynos_show_wakeup_reason(void)
 {
 	unsigned int wakeup_stat;

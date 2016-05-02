@@ -877,7 +877,7 @@ static int bq27x00_battery_status(struct bq27x00_device_info *di,
 	charger = power_supply_get_by_name("usb");
 	if(charger){
 		charger->get_property(charger, POWER_SUPPLY_PROP_CHARGE_TYPE,&charger_val);
-		if(di->cache.capacity ==100){
+		if((di->cache.capacity ==100) && (charger_val.intval != POWER_SUPPLY_CHARGE_TYPE_NONE)){
 			status = POWER_SUPPLY_STATUS_FULL;
 		}else if(charger_val.intval == POWER_SUPPLY_CHARGE_TYPE_NONE){
 			status = POWER_SUPPLY_STATUS_DISCHARGING;

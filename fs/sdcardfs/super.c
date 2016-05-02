@@ -203,10 +203,10 @@ static int sdcardfs_show_options(struct seq_file *m, struct dentry *root)
 	struct sdcardfs_sb_info *sbi = SDCARDFS_SB(root->d_sb);
 	struct sdcardfs_mount_options *opts = &sbi->options;
 
-	if (opts->fs_low_uid != 0)
-		seq_printf(m, ",uid=%u", opts->fs_low_uid);
-	if (opts->fs_low_gid != 0)
-		seq_printf(m, ",gid=%u", opts->fs_low_gid);
+	if (!uid_eq(opts->fs_low_uid,GLOBAL_ROOT_UID))
+		seq_printf(m, ",uid=%u", __kuid_val(opts->fs_low_uid));
+	if (!gid_eq(opts->fs_low_gid, GLOBAL_ROOT_GID))
+		seq_printf(m, ",gid=%u", __kgid_val(opts->fs_low_gid));
 
 	if (opts->derive == DERIVE_NONE)
 		seq_printf(m, ",derive=none");

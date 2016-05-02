@@ -350,7 +350,7 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 	unlock_dir(lower_parent_dentry);
 
 	if ((sbi->options.derive == DERIVE_UNIFIED) && (!strcasecmp(dentry->d_name.name, "obb"))
-		&& (pi->perm == PERM_ANDROID) && (pi->userid == 0))
+		&& (pi->perm == PERM_ANDROID) && (uid_eq(pi->userid, GLOBAL_ROOT_UID)))
 		make_nomedia_in_obb = 1;
 
 	/* When creating /Android/data and /Android/obb, mark them as .nomedia */

@@ -35,7 +35,7 @@ static void inherit_derived_state(struct inode *parent, struct inode *child)
 
 /* helper function for derived state */
 void setup_derived_state(struct inode *inode, perm_t perm,
-                        userid_t userid, uid_t uid, gid_t gid, mode_t mode)
+                        userid_t userid, kuid_t uid, kgid_t gid, mode_t mode)
 {
 	struct sdcardfs_inode_info *info = SDCARDFS_I(inode);
 
@@ -78,7 +78,7 @@ void get_derived_permission(struct dentry *parent, struct dentry *dentry)
 		case PERM_LEGACY_PRE_ROOT:
 			/* Legacy internal layout places users at top level */
 			info->perm = PERM_ROOT;
-			info->userid = simple_strtoul(dentry->d_name.name, NULL, 10);
+			info->userid = KUIDT_INIT(simple_strtoul(dentry->d_name.name, NULL, 10));
 			break;
 		case PERM_ROOT:
 			/* Assume masked off by default. */
@@ -90,14 +90,14 @@ void get_derived_permission(struct dentry *parent, struct dentry *dentry)
 			} else if (sbi->options.split_perms) {
 				if (!strcasecmp(dentry->d_name.name, "DCIM")
 					|| !strcasecmp(dentry->d_name.name, "Pictures")) {
-					info->d_gid = AID_SDCARD_PICS;
+					info->d_gid = KGIDT_INIT(AID_SDCARD_PICS);
 				} else if (!strcasecmp(dentry->d_name.name, "Alarms")
 						|| !strcasecmp(dentry->d_name.name, "Movies")
 						|| !strcasecmp(dentry->d_name.name, "Music")
 						|| !strcasecmp(dentry->d_name.name, "Notifications")
 						|| !strcasecmp(dentry->d_name.name, "Podcasts")
 						|| !strcasecmp(dentry->d_name.name, "Ringtones")) {
-					info->d_gid = AID_SDCARD_AV;
+					info->d_gid = KGIDT_INIT(AID_SDCARD_AV);
 				}
 			}
 			break;
@@ -121,7 +121,7 @@ void get_derived_permission(struct dentry *parent, struct dentry *dentry)
 				 * by sdcard_all. Zygote will bind mount the appropriate user-
 				 * specific path. */
 				info->perm = PERM_ANDROID_USER;
-				info->d_gid = AID_SDCARD_ALL;
+				info->d_gid = KGIDT_INIT(AID_SDCARD_ALL);
 				info->d_mode = 00770;
 			}
 			break;
@@ -131,7 +131,7 @@ void get_derived_permission(struct dentry *parent, struct dentry *dentry)
 		case PERM_ANDROID_OBB:
 		case PERM_ANDROID_MEDIA:
 			appid = get_appid(sbi->pkgl_id, dentry->d_name.name);
-			if (appid != 0) {
+			if (!uid_eq(appid, GLOBAL_ROOT_UID)) {
 				info->d_uid = multiuser_get_uid(parent_info->userid, appid);
 			}
 			info->d_mode = 00770;
@@ -139,8 +139,8 @@ void get_derived_permission(struct dentry *parent, struct dentry *dentry)
 		case PERM_ANDROID_USER:
 			/* Root of a secondary user */
 			info->perm = PERM_ROOT;
-			info->userid = simple_strtoul(dentry->d_name.name, NULL, 10);
-			info->d_gid = AID_SDCARD_R;
+			info->userid = KUIDT_INIT(simple_strtoul(dentry->d_name.name, NULL, 10));
+			info->d_gid = KGIDT_INIT(AID_SDCARD_R);
 			info->d_mode = 00771;
 			break;
 	}
@@ -183,7 +183,7 @@ int need_graft_path(struct dentry *dentry)
 
 		/* /Android/obb is the base obbpath of DERIVED_UNIFIED */
 		if(!(sbi->options.derive == DERIVE_UNIFIED
-				&& parent_info->userid == 0)) {
+				&& uid_eq(parent_info->userid, GLOBAL_ROOT_UID))) {
 			ret = 1;
 		}
 	}
@@ -248,7 +248,7 @@ int is_base_obbpath(struct dentry *dentry)
 	else if (parent_info->perm == PERM_ANDROID &&
 			!strcasecmp(dentry->d_name.name, "obb")) {
 		if((sbi->options.derive == DERIVE_UNIFIED
-				&& parent_info->userid == 0)) {
+				&& uid_eq(parent_info->userid, GLOBAL_ROOT_UID))) {
 			ret = 1;
 		}
 	}

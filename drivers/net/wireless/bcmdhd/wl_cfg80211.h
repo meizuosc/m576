@@ -594,7 +594,6 @@ struct bcm_cfg80211 {
 	u8 *extra_buf;	/* maily to grab assoc information */
 	struct dentry *debugfsdir;
 	struct rfkill *rfkill;
-	bool rf_blocked;
 	struct ieee80211_channel remain_on_chan;
 	enum nl80211_channel_type remain_on_chan_type;
 	u64 send_action_id;
