@@ -211,7 +211,8 @@ const struct v4l2_file_operations fimc_is_dis_video_fops = {
 static int fimc_is_dis_video_querycap(struct file *file, void *fh,
 					struct v4l2_capability *cap)
 {
-	struct fimc_is_core *core = video_drvdata(file);
+	struct fimc_is_video *video = video_drvdata(file);
+	struct fimc_is_core *core = container_of(video, struct fimc_is_core, video_vdo);
 
 	strncpy(cap->driver, core->pdev->name, sizeof(cap->driver) - 1);
 

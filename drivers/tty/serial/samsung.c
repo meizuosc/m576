@@ -1314,10 +1314,14 @@ static void s3c24xx_serial_pm(struct uart_port *port, unsigned int level,
 			      unsigned int old)
 {
 	struct s3c24xx_uart_port *ourport = to_ourport(port);
+	int timeout = 10000;
 	unsigned int umcon;
 
 	switch (level) {
 	case S3C24XX_UART_PORT_SUSPEND:
+		while (--timeout && !s3c24xx_serial_txempty_nofifo(port))
+			udelay(100);
+
 		/* disable auto flow control & set nRTS for High */
 		umcon = rd_regl(port, S3C2410_UMCON);
 		umcon &= ~(S3C2410_UMCOM_AFC | S3C2410_UMCOM_RTS_LOW);

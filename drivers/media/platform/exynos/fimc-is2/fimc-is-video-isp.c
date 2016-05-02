@@ -259,7 +259,13 @@ const struct v4l2_file_operations fimc_is_ixs_video_fops = {
 static int fimc_is_ixs_video_querycap(struct file *file, void *fh,
 					struct v4l2_capability *cap)
 {
-	struct fimc_is_core *isp = video_drvdata(file);
+	struct fimc_is_video *video = video_drvdata(file);
+	struct fimc_is_core *isp;
+
+	if (video->id == FIMC_IS_VIDEO_I0S_NUM)
+		isp = container_of(video, struct fimc_is_core, video_i0s);
+	else
+		isp = container_of(video, struct fimc_is_core, video_i1s);
 
 	strncpy(cap->driver, isp->pdev->name, sizeof(cap->driver) - 1);
 

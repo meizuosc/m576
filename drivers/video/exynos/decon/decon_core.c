@@ -3857,6 +3857,9 @@ static struct fb_ops decon_fb_ops = {
 	.fb_copyarea    = cfb_copyarea,
 	.fb_imageblit   = cfb_imageblit,
 	.fb_ioctl	= decon_ioctl,
+#ifdef CONFIG_COMPAT
+	.fb_compat_ioctl = decon_ioctl,
+#endif
 	.fb_pan_display	= decon_pan_display,
 	.fb_mmap	= decon_mmap,
 	.fb_release	= decon_release,

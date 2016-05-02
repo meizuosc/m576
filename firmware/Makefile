@@ -106,6 +106,7 @@ fw-shipped-$(CONFIG_USB_KAWETH) += kaweth/new_code.bin kaweth/trigger_code.bin \
 				   kaweth/trigger_code_fix.bin
 ifdef CONFIG_FIRMWARE_IN_KERNEL
 fw-shipped-$(CONFIG_EXYNOS_MBOX) += apm_0611_fw_CH5.h
+AFLAGS_apm_0611_fw_CH5.h.gen.o = -I$(srctree)
 fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_MPR) += keyspan/mpr.fw
 fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_USA18X) += keyspan/usa18x.fw
 fw-shipped-$(CONFIG_USB_SERIAL_KEYSPAN_USA19) += keyspan/usa19.fw
@@ -138,7 +139,7 @@ fw-shipped-$(CONFIG_VIDEO_CPIA2) += cpia2/stv0672_vp4.bin
 fw-shipped-$(CONFIG_YAM) += yam/1200.bin yam/9600.bin
 
 TSPFIRMWARE_DIRECTORY = firmware/tsp_synaptics
-ifeq ($(shell test -d $(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
+ifeq ($(shell test -d $(srctree)/$(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
 fw-shipped-$(CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI) += tsp_synaptics/synaptics_b0_h.fw \
 	tsp_synaptics/synaptics_b0_fac.fw
 else
@@ -146,7 +147,7 @@ $(warning '$(TSPFIRMWARE_DIRECTORY)' directory dose not exist)
 endif
 
 TSPFIRMWARE_DIRECTORY = firmware/tsp_stm
-ifeq ($(shell test -d $(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
+ifeq ($(shell test -d $(srctree)/$(TSPFIRMWARE_DIRECTORY) && echo yes),yes)
 fw-shipped-$(CONFIG_TOUCHSCREEN_FTS) += tsp_stm/stm_s.fw tsp_stm/stm_t.fw tsp_stm/stm_tb.fw tsp_stm/stm_tb_integ.fw
 else
 $(warning '$(TSPFIRMWARE_DIRECTORY)' directory dose not exist)

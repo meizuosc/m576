@@ -172,6 +172,8 @@ source "drivers/battery/Kconfig"
 
 source "drivers/reset/Kconfig"
 
+source "drivers/android/Kconfig"
+
 source "drivers/gud/Kconfig"
 
 source "drivers/gator/Kconfig"
@@ -181,4 +183,5 @@ source "drivers/trace/Kconfig"
 source "drivers/bts/Kconfig"
 
 source "drivers/tspdrv/Kconfig"
+
 endmenu

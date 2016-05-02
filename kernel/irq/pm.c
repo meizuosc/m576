@@ -100,8 +100,6 @@ EXPORT_SYMBOL_GPL(resume_device_irqs);
 int check_wakeup_irqs(void)
 {
 	struct irq_desc *desc;
-	/* FIXME : Fix build error */
-	/* char suspend_abort[MAX_SUSPEND_ABORT_LEN]; */
 	int irq;
 
 	for_each_irq_desc(irq, desc) {

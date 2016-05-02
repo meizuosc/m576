@@ -57,7 +57,8 @@ static struct inet_protosw pingv6_protosw = {
 
 
 /* Compatibility glue so we can support IPv6 when it's compiled as a module */
-int dummy_ipv6_recv_error(struct sock *sk, struct msghdr *msg, int len, int *addr_len)
+int dummy_ipv6_recv_error(struct sock *sk, struct msghdr *msg, int len,
+				 int *addr_len)
 {
 	return -EAFNOSUPPORT;
 }
@@ -126,9 +127,10 @@ int ping_v6_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 	if (msg->msg_name) {
 		struct sockaddr_in6 *u = (struct sockaddr_in6 *) msg->msg_name;
-		if (msg->msg_namelen < sizeof(struct sockaddr_in6) ||
-		    u->sin6_family != AF_INET6) {
+		if (msg->msg_namelen < sizeof(*u))
 			return -EINVAL;
+		if (u->sin6_family != AF_INET6) {
+			return -EAFNOSUPPORT;
 		}
 		if (sk->sk_bound_dev_if &&
 		    sk->sk_bound_dev_if != u->sin6_scope_id) {

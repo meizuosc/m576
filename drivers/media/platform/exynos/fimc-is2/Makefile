@@ -34,11 +34,8 @@ obj-$(CONFIG_CAMERA_EEPROM_SUPPORT) += fimc-is-device-eeprom.o
 obj-$(CONFIG_VIDEO_EXYNOS_FIMC_IS) += sensor/
 obj-$(CONFIG_VIDEO_EXYNOS_FIMC_IS) += ischain/
 obj-$(CONFIG_VIDEO_EXYNOS_FIMC_IS) += ois/
-obj-$(CONFIG_MEIZU_CAMERA_SPECIAL) += meizu_camera_special.o \
-        lens/AfInit.o \
-        lens/AfInter.o \
-        lens/AfSTMV.o \
-        lens/lc898212xd.o
+obj-$(CONFIG_MEIZU_CAMERA_SPECIAL) += meizu_camera_special.o
+obj-$(CONFIG_MEIZU_CAMERA_SPECIAL) += lens/
 
 EXTRA_CFLAGS += -Idrivers/media/platform/exynos/fimc-is2
 EXTRA_CFLAGS += -Idrivers/media/platform/exynos/fimc-is2/include

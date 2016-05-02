@@ -560,7 +560,7 @@ static int bos_desc(struct usb_composite_dev *cdev)
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	usb_ext->bmAttributes = 0;
 #else
-	usb_ext->bmAttributes = cpu_to_le32(USB_LPM_SUPPORT);
+	usb_ext->bmAttributes = cpu_to_le32(USB_LPM_SUPPORT | USB_BESL_SUPPORT);
 #endif
 
 	/*
