@@ -1,26 +1,16 @@
-[M576](http://www.meizu.com)
-=================
+# Turbo
+This tree is used to build boot.img which include ubuntu kernel and initrd for Turbo (Pro5 Ubuntu Edition)
 
-M576 repo is Linux kernel source code for Meizu Pro 5 smartphones. With this repo, you can customize the source code and compile a Linux kernel image yourself. Enjoy it!
+Environment
+-----------------------------
+$ sudo apt-get install make lzop abootimg wget libc6-i386 gcc git ccache bc
 
-HOW TO COMPILE
------------
+Build Steps for boot.img
+-----------------------------
+$ make -f ubuntu.mk bootimage
 
-###1. Download source code###
-
-  <code>git clone https://github.com/meizuosc/m576.git</code>
-
-###2. Compiling###
-
-  <code>make pro5_defconfig</code>
-  
-  <code>make -j8 ARCH=arm CROSS_COMPILE=aarch64-linux-android-</code>
-
-  Note:
-  + Make sure you have arm cross tool chain, maybe you can download [here](http://www.linaro.org/downloads)
-  + If you get a poor cpu in your compiling host, you should use "-j4" or lower instead of "-j8"
-
-Get Help
---------
-
-Checkout our community http://bbs.meizu.cn (in Chinese)
+Note
+-----------------------------
+ * The mkbootimg and cross compiler in prebuilt folder came from AOSP Android-5.1.0_r1
+ * The Ubuntu ramdisk is commit 9a919 of https://code-review.phablet.ubuntu.com/p/ubuntu/initrd/ubuntu_prebuilt_initrd_debs
+ * flash image by "fastboot flash bootimg boot.img"
