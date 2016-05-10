@@ -63,6 +63,7 @@
 #include <scsi/scsi_host.h>
 #include <scsi/scsi_ioctl.h>
 #include <scsi/scsicam.h>
+#include <linux/buffer_head.h>
 
 #include "sd.h"
 #include "scsi_priv.h"
@@ -97,6 +98,9 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_RBC);
 #else
 #define SD_MINORS	0
 #endif
+
+static struct gendisk *ufs_disk = NULL;
+static int partition_major = 0;
 
 static void sd_config_discard(struct scsi_disk *, unsigned int);
 static void sd_config_write_same(struct scsi_disk *);
@@ -284,59 +288,6 @@ int sd_partition_rw(const char *part_name, int write, loff_t offset,
 	}
 
 	return ret;
-}
-
-static int sd_meizu_init(struct gendisk *gd)
-{
-#if !defined(CONFIG_RECOVERY_KERNEL)
-	/* set /dev/block/sda sdb sdc Read-only */
-	if (!strcmp(gd->disk_name, "sda") ||
-		!strcmp(gd->disk_name, "sdb") ||
-		!strcmp(gd->disk_name, "sdc")) {
-		gd->part0.policy = 1;
-	}
-#endif
-
-	if (!strcmp(gd->disk_name, "sda")) {
-#if !defined(CONFIG_RECOVERY_KERNEL)
-		struct disk_part_iter piter;
-		struct hd_struct *part;
-#endif
-
-		ufs_disk = gd;
-
-		meizu_device_info_init();
-
-#if !defined(CONFIG_RECOVERY_KERNEL)
-		disk_part_iter_init(&piter, ufs_disk, DISK_PITER_INCL_EMPTY);
-		while ((part = disk_part_iter_next(&piter))) {
-			if (!strcmp(part->info->volname, "efs") ||
-				!strcmp(part->info->volname, "dtb") ||
-				!strcmp(part->info->volname, "bootimg") ||
-				!strcmp(part->info->volname, "recovery") ||
-				!strcmp(part->info->volname, "cache") ||
-				!strcmp(part->info->volname, "bootlogo") ||
-				!strcmp(part->info->volname, "userdata")) {
-				continue;
-			}
-#if defined(CONFIG_ENG_KERNEL) || defined(CONFIG_FACTORY_KERNEL)
-			if (!strcmp(part->info->volname, "custom")) {
-				continue;
-			}
-			if (!strcmp(part->info->volname, "mnv")) {
-				continue;
-			}
-#endif
-			if (!strcmp(part->info->volname, "system")) {
-					continue;
-			}
-			part->policy = 1;
-		}
-		disk_part_iter_exit(&piter);
-#endif
-	}
-
-	return 0;
 }
 
 static ssize_t

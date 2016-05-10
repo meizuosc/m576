@@ -83,8 +83,6 @@ int check_bt_op(void)
 }
 EXPORT_SYMBOL(check_bt_op);
 
-extern int get_bt_mac_from_device(unsigned char *buf);
-
 static int bcm43241_bt_get_mac_addr(unsigned char *buf)
 {
 	struct file *fp      = NULL;
@@ -92,9 +90,8 @@ static int bcm43241_bt_get_mac_addr(unsigned char *buf)
 	mm_segment_t oldfs    = {0};
 	char *bt_mac_file       = "/factory/bluetooth/bt_mac_addr";
 	int ret = 0;
-	int no_mac = 0;
+	int no_mac = 1;
 
-	no_mac = !!get_bt_mac_from_device(buf);
 	if(!no_mac) {
 		fp = filp_open(bt_mac_file, O_RDONLY, 0);
 		if (IS_ERR(fp)) {

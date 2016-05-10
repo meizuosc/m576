@@ -143,7 +143,6 @@ static int rtc_resume(struct device *dev)
 	if (sleep_time.tv_sec >= 0)
 		timekeeping_inject_sleeptime(&sleep_time);
 	rtc_hctosys_ret = 0;
-	suspend_time_resume(tm);
 
 	rtc_is_suspend = 0;
 
