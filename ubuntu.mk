@@ -1,4 +1,5 @@
 CURRENT_DIR = $(shell pwd)
+CPUS = $(shell cat /proc/cpuinfo | grep processor | wc -l)
 UBUNTU_OUT ?= $(CURRENT_DIR)/ubuntu_out
 UBUNTU_INITRD=$(UBUNTU_OUT)/initrd.img-touch
 PREBUILT_KERNEL_IMAGE=$(UBUNTU_OUT)/arch/arm64/boot/Image
@@ -15,9 +16,9 @@ $(UBUNTU_OUT):
 	mkdir -p $@
 
 $(PREBUILT_KERNEL_IMAGE): $(UBUNTU_OUT)
-	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) ARCH=arm64 VARIANT_DEFCONFIG= SELINUX_DEFCONFIG= m86_user_defconfig
-	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) ARCH=arm64 headers_install;
-	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) CFLAGS_MODULE="-fno-pic" ARCH=arm64 Image
+	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) ARCH=arm64 VARIANT_DEFCONFIG= SELINUX_DEFCONFIG= m86_user_defconfig -j$(CPUS)
+	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) ARCH=arm64 headers_install -j$(CPUS)
+	make CROSS_COMPILE="$(TURBO_CROSS_COMPILE)" O=$(UBUNTU_OUT) CFLAGS_MODULE="-fno-pic" ARCH=arm64 Image -j$(CPUS)
 
 $(UBUNTU_INITRD): $(UBUNTU_OUT)
 	dpkg -x prebuilts/initrd/$(CORE_NAME)/armhf/* $(UBUNTU_OUT); \
